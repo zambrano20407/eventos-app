@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="/img/icono.png" />
+    <title>Panel Administrativo PTFT38 | Registraduría Caquetá</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/css/admin.css" />
+  </head>
+  <body>
+    <!-- BARRA SUPERIOR -->
+    <div class="top-bar" style="width: 100%">
+      <div class="top-bar-inner">
+        <span class="top-bar-left"
+          >República de Colombia · Organización Electoral</span
+        >
+        <div class="top-bar-right">
+          <span>Panel de Administración</span>
+          <span class="admin-badge">Admin</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- HEADER -->
+    <div class="header" style="width: 100%">
+      <div class="header-main">
+        <div class="logo-wrap">
+          <img src="/img/Logo 2.jpg" alt="Logo" />
+        </div>
+        <div class="header-text-group">
+          <div class="org-name">Registraduría Nacional del Estado Civil</div>
+          <div class="header-titulo">
+            Panel Administrativo <span>PTFT38</span>
+          </div>
+          <div class="header-subtitulo">
+            Permanencia del Talento Humano · Delegación Departamental Caquetá
+          </div>
+        </div>
+        <div class="ptft-badge">
+          <span class="ptft-code">PTFT38</span>
+          <span class="ptft-ver">Versión 5</span>
+        </div>
+      </div>
+      <div class="nav-wrap">
+        <div class="nav-tabs">
+          <button
+            class="nav-tab active"
+            onclick="window.tab('eventos')"
+            id="tab-eventos"
+          >
+            📋 Eventos
+          </button>
+          <button
+            class="nav-tab"
+            onclick="window.tab('registros')"
+            id="tab-registros"
+          >
+            👥 Registros
+          </button>
+          <button
+            class="nav-tab"
+            onclick="window.tab('estadisticas')"
+            id="tab-estadisticas"
+          >
+            📊 Estadísticas
+          </button>
+          <button
+            class="nav-tab"
+            onclick="window.tab('exportar')"
+            id="tab-exportar"
+          >
+            📥 Exportar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD -->
+    <div class="card">
+      <div id="panelEventos">
+        <div class="card-body">
+          <div class="section-title">Crear nuevo evento</div>
+          <div class="evento-form-wrap">
+            <div class="form-grid">
+              <div class="span2">
+                <div class="field">
+                  <label
+                    >Nombre del curso / capacitación
+                    <span class="req">*</span></label
+                  >
+                  <input
+                    type="text"
+                    id="evNombre"
+                    placeholder="Ej. Inducción Electoral 2026"
+                  />
+                </div>
+              </div>
+              <div>
+                <div class="field">
+                  <label>Fecha</label>
+                  <input type="date" id="evFecha" min="" />
+                </div>
+              </div>
+              <div>
+                <div class="field">
+                  <label>Jornada</label>
+                  <div class="select-wrap">
+                    <select id="evJornada">
+                      <option value="">Seleccione…</option>
+                      <option>Mañana</option>
+                      <option>Tarde</option>
+                      <option>Noche</option>
+                      <option>Completa</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="span2">
+                <div class="field">
+                  <label>Institución que dicta</label>
+                  <input
+                    type="text"
+                    id="evInstitucion"
+                    placeholder="Ej. CEDAE – Registraduría Nacional"
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="btn-row" style="margin-top: 16px">
+              <button
+                class="btn-primary"
+                id="btnCrearEvento"
+                onclick="window.crearEvento()"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Crear evento y generar enlace
+              </button>
+            </div>
+          </div>
+          <div class="section-title">Eventos existentes</div>
+          <div class="warn-box">
+            ⚠️
+            <span
+              >Comparta <strong>solo el enlace del formulario</strong> con los
+              registradores. Este panel es
+              <strong>únicamente para el administrador</strong>.</span
+            >
+          </div>
+          <div class="eventos-list" id="eventosList">
+            <div class="no-eventos">Cargando eventos…</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="panelRegistros" style="display: none">
+        <div class="card-body">
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              flex-wrap: wrap;
+              gap: 12px;
+            "
+          >
+            <div>
+              <div
+                class="section-title"
+                style="border: none; padding: 0; margin-bottom: 3px"
+                id="regTitulo"
+              >
+                Registros de asistencia
+              </div>
+              <div
+                style="font-size: 12px; color: var(--gris-txt)"
+                id="regSub"
+              ></div>
+            </div>
+            <button
+              class="btn-verde"
+              onclick="window.exportarEvento()"
+              id="btnExportarEv"
+              style="display: none"
+            >
+              📥 Exportar este evento
+            </button>
+          </div>
+          <div class="field">
+            <label>Seleccionar evento</label>
+            <div class="select-wrap">
+              <select id="regSelector" onchange="window.cargarRegistros()">
+                <option value="">— Seleccione un evento —</option>
+              </select>
+            </div>
+          </div>
+          <div class="reg-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Cédula</th>
+                  <th>Nombre</th>
+                  <th>Dependencia</th>
+                  <th>Sexo</th>
+                  <th>Nivel</th>
+                  <th>Hora</th>
+                  <th>Firma</th>
+                </tr>
+              </thead>
+              <tbody id="regTabla">
+                <tr>
+                  <td colspan="8" class="sin-datos">
+                    Seleccione un evento para ver sus registros.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div
+            style="
+              font-size: 11.5px;
+              color: var(--gris-txt);
+              text-align: right;
+              margin-top: 4px;
+            "
+            id="regConteo"
+          ></div>
+        </div>
+      </div>
+
+      <div id="panelEstadisticas" style="display: none">
+        <div class="card-body">
+          <div class="section-title">Resumen general</div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-num" id="statEventos">—</div>
+              <div class="stat-label">Eventos creados</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num" id="statTotal">—</div>
+              <div class="stat-label">Total registros</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num" id="statPromedio">—</div>
+              <div class="stat-label">Promedio por evento</div>
+            </div>
+          </div>
+          <div class="section-title">Por dependencia</div>
+          <div class="reg-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Dependencia</th>
+                  <th>Registros</th>
+                  <th>%</th>
+                </tr>
+              </thead>
+              <tbody id="statDepTabla">
+                <tr>
+                  <td colspan="3" class="sin-datos">Cargando…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="section-title">Por nivel del cargo</div>
+          <div class="reg-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nivel</th>
+                  <th>Registros</th>
+                  <th>%</th>
+                </tr>
+              </thead>
+              <tbody id="statNivelTabla">
+                <tr>
+                  <td colspan="3" class="sin-datos">Cargando…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="panelExportar" style="display: none">
+        <div class="card-body">
+          <div class="section-title">Exportar datos</div>
+          <div style="display: flex; flex-direction: column; gap: 16px">
+            <div class="export-card">
+              <div class="export-card-title">
+                <span style="font-size: 20px">📊</span> Todos los eventos
+              </div>
+              <div class="export-card-desc">
+                Descarga <strong>todos los registros</strong> de todos los
+                eventos en un solo archivo CSV compatible con Excel.
+              </div>
+              <button class="btn-primary" onclick="window.exportarTodo()">
+                📥 Descargar todos los registros
+              </button>
+            </div>
+            <div class="export-card">
+              <div class="export-card-title">
+                <span style="font-size: 20px">📋</span> Un evento específico
+              </div>
+              <div class="export-card-desc">
+                Seleccione el evento que desea exportar:
+              </div>
+              <div class="field" style="margin-bottom: 14px">
+                <div class="select-wrap">
+                  <select id="exportSelector">
+                    <option value="">— Seleccione evento —</option>
+                  </select>
+                </div>
+              </div>
+              <button class="btn-verde" onclick="window.exportarSeleccionado()">
+                📥 Descargar evento seleccionado
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /card -->
+
+    <!-- MODAL -->
+    <div class="modal-overlay" id="modalFirma" onclick="window.cerrarModal()">
+      <div class="modal-box" onclick="event.stopPropagation()">
+        <h3 id="modalNombre">Firma digital</h3>
+        <img id="modalImg" src="" alt="Firma" />
+        <br /><button class="modal-close" onclick="window.cerrarModal()">
+          Cerrar
+        </button>
+      </div>
+    </div>
+
+    <!-- FOOTER ESTILO REGISTRADURÍA -->
+    <div class="page-footer">
+      <div class="footer-teal-bar"></div>
+      <div class="footer-body">
+        <img class="footer-logo" src="/img/Logo 2.jpg" alt="Logo" />
+        <div class="footer-divider"></div>
+        <div class="footer-info">
+          <div class="footer-org">Registraduría Nacional del Estado Civil</div>
+          <div class="footer-sub">
+            Delegación Departamental Caquetá<br />
+            Permanencia del Talento Humano · Formato PTFT38
+          </div>
+        </div>
+        <div class="footer-right-block">
+          <div class="footer-ptft">PTFT38</div>
+          <div class="footer-ver">Versión 5 · 2025</div>
+          <div class="e26-dots">
+            <div class="e26-dot" style="background: var(--e26-amarillo)"></div>
+            <div class="e26-dot" style="background: var(--e26-azul)"></div>
+            <div class="e26-dot" style="background: var(--e26-rojo)"></div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        Panel de administración · Solo para uso del administrador autorizado ·
+        República de Colombia
+      </div>
+    </div>
+    <script type="module" src="js/admin.js"></script>
+  </body>
+</html>

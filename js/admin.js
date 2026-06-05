@@ -1,0 +1,580 @@
+import { db } from "./firebase-config.js";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  query,
+  orderBy,
+  Timestamp,
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// exportar.js se carga de forma dinamica cuando se necesita
+let exportarPTFT38 = null;
+async function cargarExportar() {
+  if (exportarPTFT38) return true;
+  try {
+    const mod = await import("./exportar.js");
+    exportarPTFT38 = mod.exportarPTFT38;
+    return true;
+  } catch (e) {
+    console.warn("exportar.js no disponible:", e.message);
+    return false;
+  }
+}
+
+console.log("admin.js conectado con Firebase");
+
+/* ══════════════════════════════════════════
+   CONSTANTES
+══════════════════════════════════════════ */
+const COL_EVENTOS = "eventos";
+const COL_REGS = (evId) => `eventos/${evId}/registros`;
+
+const TEMPLATE_URL = "./formato_ptft38.xlsx";
+const URL_ASISTENCIA = "vistas/asistencia.html";
+
+// ── Detectar si estamos en el servidor local Python ──────────
+const ES_SERVIDOR_LOCAL =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1";
+
+/* ── Función de exportación: usa servidor Python si está local,
+      SheetJS si está en hosting ─────────────────────────────── */
+async function exportar(eventoId, nombreBoton) {
+  const btn = document.getElementById(nombreBoton);
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "⏳ Generando Excel…";
+  }
+
+  try {
+    if (ES_SERVIDOR_LOCAL) {
+      // En servidor local → Python genera el Excel con firmas
+      // ── Servidor local Python → Excel con firmas reales ──
+      const url = `/api/exportar?eventoId=${eventoId}`;
+      const resp = await fetch(url);
+
+      if (!resp.ok) {
+        const err = await resp.json();
+        throw new Error(err.error || "Error del servidor");
+      }
+
+      // Descargar el archivo que devuelve el servidor
+      const blob = await resp.blob();
+      const urlBlob = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = urlBlob;
+      a.download =
+        resp.headers
+          .get("Content-Disposition")
+          ?.split("filename=")[1]
+          ?.replace(/"/g, "") || "PTFT38.xlsx";
+      a.click();
+      URL.revokeObjectURL(urlBlob);
+    } else {
+      // ── Firebase Hosting → SheetJS ──
+      await cargarExportar();
+      if (exportarPTFT38) {
+        await exportarPTFT38(
+          window._evActual,
+          window._regActuales,
+          TEMPLATE_URL,
+        );
+      } else {
+        alert("Módulo de exportación no disponible.");
+      }
+    }
+  } catch (err) {
+    console.error("Error exportando:", err);
+    alert(`Error al generar el Excel:\n${err.message}`);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "📥 Exportar este evento";
+    }
+  }
+}
+
+/* ══════════════════════════════════════════
+   TABS
+══════════════════════════════════════════ */
+window.tab = function (name) {
+  ["Eventos", "Registros", "Estadisticas", "Exportar"].forEach((n) => {
+    const panel = document.getElementById("panel" + n);
+    const tabEl = document.getElementById("tab-" + n.toLowerCase());
+    if (panel) panel.style.display = "none";
+    if (tabEl) tabEl.classList.remove("active");
+  });
+  const show = document.getElementById(
+    "panel" + name.charAt(0).toUpperCase() + name.slice(1),
+  );
+  const active = document.getElementById("tab-" + name);
+  if (show) show.style.display = "block";
+  if (active) active.classList.add("active");
+
+  if (name === "eventos") renderEventos();
+  if (name === "registros") renderRegistrosPanel();
+  if (name === "estadisticas") renderEstadisticas();
+  if (name === "exportar") renderExportar();
+};
+
+/* ══════════════════════════════════════════
+   GENERAR ENLACE
+══════════════════════════════════════════ */
+function generarLink(evId) {
+  try {
+    const url = new URL(URL_ASISTENCIA, window.location.href);
+    url.searchParams.set("ev", evId);
+    return url.toString();
+  } catch (e) {
+    return URL_ASISTENCIA + "?ev=" + evId;
+  }
+}
+
+/* ══════════════════════════════════════════
+   CREAR EVENTO
+══════════════════════════════════════════ */
+window.crearEvento = async function () {
+  const nombre = document.getElementById("evNombre").value.trim();
+  if (!nombre) {
+    document.getElementById("evNombre").classList.add("err");
+    return;
+  }
+  document.getElementById("evNombre").classList.remove("err");
+
+  const fechaRaw = document.getElementById("evFecha").value;
+  const fecha = fechaRaw
+    ? new Date(fechaRaw + "T12:00:00").toLocaleDateString("es-CO")
+    : new Date().toLocaleDateString("es-CO");
+
+  const btn = document.getElementById("btnCrearEvento");
+  btn.disabled = true;
+  btn.textContent = "Creando…";
+
+  try {
+    const docRef = await addDoc(collection(db, COL_EVENTOS), {
+      nombre,
+      fecha,
+      jornada: document.getElementById("evJornada").value,
+      institucion: document.getElementById("evInstitucion").value.trim(),
+      creadoEn: Timestamp.now(),
+    });
+
+    console.log("Evento creado con ID:", docRef.id);
+
+    // Limpiar campos
+    ["evNombre", "evInstitucion"].forEach(
+      (id) => (document.getElementById(id).value = ""),
+    );
+    document.getElementById("evFecha").valueAsDate = new Date();
+    document.getElementById("evJornada").value = "";
+
+    renderEventos();
+  } catch (err) {
+    console.error("Error creando evento:", err);
+    alert("Error al crear el evento. Revise la consola.");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Crear evento y generar enlace`;
+  }
+};
+
+/* ══════════════════════════════════════════
+   ELIMINAR EVENTO
+══════════════════════════════════════════ */
+window.eliminarEvento = async function (evId) {
+  // Contar registros
+  const regsSnap = await getDocs(collection(db, COL_REGS(evId)));
+  const n = regsSnap.size;
+  const msg =
+    n > 0
+      ? `¿Eliminar este evento? Tiene ${n} registro(s) que también se borrarán.`
+      : "¿Eliminar este evento?";
+  if (!confirm(msg)) return;
+
+  try {
+    // Borrar registros primero
+    for (const r of regsSnap.docs) {
+      await deleteDoc(doc(db, COL_REGS(evId), r.id));
+    }
+    // Borrar evento
+    await deleteDoc(doc(db, COL_EVENTOS, evId));
+    renderEventos();
+  } catch (err) {
+    console.error("Error eliminando evento:", err);
+    alert("Error al eliminar. Revise la consola.");
+  }
+};
+
+/* ══════════════════════════════════════════
+   COPIAR ENLACE
+══════════════════════════════════════════ */
+window.copiarLink = function (evId) {
+  const input = document.getElementById("lnk_" + evId);
+  const btn = document.getElementById("copy_" + evId);
+  navigator.clipboard
+    .writeText(input.value)
+    .then(() => {
+      btn.textContent = "✓ Copiado";
+      btn.classList.add("copied");
+      setTimeout(() => {
+        btn.textContent = "Copiar";
+        btn.classList.remove("copied");
+      }, 2000);
+    })
+    .catch(() => {
+      input.select();
+      document.execCommand("copy");
+    });
+};
+
+/* ══════════════════════════════════════════
+   RENDER EVENTOS
+══════════════════════════════════════════ */
+async function renderEventos() {
+  const list = document.getElementById("eventosList");
+  list.innerHTML = '<div class="no-eventos">Cargando eventos…</div>';
+
+  try {
+    const snap = await getDocs(
+      query(collection(db, COL_EVENTOS), orderBy("creadoEn", "desc")),
+    );
+
+    if (snap.empty) {
+      list.innerHTML =
+        '<div class="no-eventos">No hay eventos aún. Cree el primero arriba.</div>';
+      return;
+    }
+
+    // Contar registros de cada evento
+    const items = await Promise.all(
+      snap.docs.map(async (d) => {
+        const ev = { id: d.id, ...d.data() };
+        const regs = await getDocs(collection(db, COL_REGS(ev.id)));
+        return { ev, count: regs.size };
+      }),
+    );
+
+    list.innerHTML = items
+      .map(({ ev, count }) => {
+        const lnk = generarLink(ev.id);
+        return `
+      <div class="ev-item">
+        <div class="ev-item-top">
+          <div class="ev-item-icon">📋</div>
+          <div class="ev-item-info">
+            <div class="ev-item-nombre">${ev.nombre}</div>
+            <div class="ev-item-meta">${[ev.fecha, ev.jornada, ev.institucion].filter(Boolean).join(" · ")}</div>
+          </div>
+          <div class="ev-item-actions">
+            <span class="ev-count ${count === 0 ? "cero" : ""}">${count} reg.</span>
+            <button class="btn-danger" onclick="eliminarEvento('${ev.id}')">✕ Eliminar</button>
+          </div>
+        </div>
+        <div class="link-box">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--cian)" stroke-width="2">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+          </svg>
+          <input type="text" value="${lnk}" id="lnk_${ev.id}" readonly onclick="this.select()">
+          <button class="btn-copy" id="copy_${ev.id}" onclick="copiarLink('${ev.id}')">Copiar</button>
+        </div>
+      </div>`;
+      })
+      .join("");
+  } catch (err) {
+    console.error("Error cargando eventos:", err);
+    list.innerHTML =
+      '<div class="no-eventos" style="color:var(--error)">Error al cargar eventos. Revise la consola.</div>';
+  }
+}
+
+/* ══════════════════════════════════════════
+   REGISTROS
+══════════════════════════════════════════ */
+async function renderRegistrosPanel() {
+  const snap = await getDocs(
+    query(collection(db, COL_EVENTOS), orderBy("creadoEn", "desc")),
+  );
+  const sel = document.getElementById("regSelector");
+  const prev = sel.value;
+  sel.innerHTML =
+    '<option value="">— Seleccione un evento —</option>' +
+    snap.docs
+      .map(
+        (d) =>
+          `<option value="${d.id}" ${d.id === prev ? "selected" : ""}>${d.data().nombre} · ${d.data().fecha}</option>`,
+      )
+      .join("");
+  if (prev) cargarRegistros();
+}
+
+window.cargarRegistros = async function () {
+  const evId = document.getElementById("regSelector").value;
+  const btnEx = document.getElementById("btnExportarEv");
+  const tabla = document.getElementById("regTabla");
+
+  if (!evId) {
+    tabla.innerHTML =
+      '<tr><td colspan="8" class="sin-datos">Seleccione un evento.</td></tr>';
+    document.getElementById("regTitulo").textContent =
+      "Registros de asistencia";
+    document.getElementById("regSub").textContent = "";
+    document.getElementById("regConteo").textContent = "";
+    btnEx.style.display = "none";
+    return;
+  }
+
+  tabla.innerHTML = '<tr><td colspan="8" class="sin-datos">Cargando…</td></tr>';
+
+  try {
+    const evDoc = await getDocs(collection(db, COL_EVENTOS));
+    const ev = evDoc.docs.find((d) => d.id === evId)?.data();
+    const regs = await getDocs(
+      query(collection(db, COL_REGS(evId)), orderBy("creadoEn", "asc")),
+    );
+
+    document.getElementById("regTitulo").textContent = ev
+      ? ev.nombre
+      : "Evento";
+    document.getElementById("regSub").textContent = ev
+      ? [ev.fecha, ev.jornada, ev.institucion].filter(Boolean).join(" · ")
+      : "";
+    document.getElementById("regConteo").textContent =
+      `${regs.size} participante(s) registrado(s)`;
+    btnEx.style.display = regs.size ? "inline-flex" : "none";
+
+    if (regs.empty) {
+      tabla.innerHTML =
+        '<tr><td colspan="8" class="sin-datos">Sin registros en este evento.</td></tr>';
+      return;
+    }
+
+    tabla.innerHTML = regs.docs
+      .map((d, i) => {
+        const r = { id: d.id, ...d.data() };
+        const hora = r.creadoEn?.toDate
+          ? r.creadoEn
+              .toDate()
+              .toLocaleTimeString("es-CO", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+          : r.timestamp || "";
+        return `
+      <tr>
+        <td style="font-weight:600;color:var(--txt)">${i + 1}</td>
+        <td>${r.cedula}</td>
+        <td style="font-weight:500;white-space:nowrap">${r.nombre}</td>
+        <td style="font-size:11.5px">${r.dependencia}</td>
+        <td>${(r.sexo || "").charAt(0)}</td>
+        <td><span class="nivel-badge">${r.nivel}</span></td>
+        <td style="font-size:11px;color:var(--txt)">${hora}</td>
+        <td><img class="thumb-firma" src="${r.firma}" onclick="verFirma('${r.firma}','${r.nombre.replace(/'/g, "\\'")}')"></td>
+      </tr>`;
+      })
+      .join("");
+
+    // Guardar para exportar
+    window._regActuales = regs.docs.map((d) => ({ id: d.id, ...d.data() }));
+    window._evActual = ev;
+  } catch (err) {
+    console.error("Error cargando registros:", err);
+    tabla.innerHTML =
+      '<tr><td colspan="8" class="sin-datos" style="color:var(--error)">Error al cargar. Revise la consola.</td></tr>';
+  }
+};
+
+window.exportarEvento = async function () {
+  if (!window._regActuales?.length) return;
+  const evId = document.getElementById("regSelector").value;
+  await exportar(evId, "btnExportarEv");
+};
+
+/* ══════════════════════════════════════════
+   ESTADÍSTICAS
+══════════════════════════════════════════ */
+async function renderEstadisticas() {
+  const eventosSnap = await getDocs(collection(db, COL_EVENTOS));
+  let todos = [];
+  for (const ev of eventosSnap.docs) {
+    const regs = await getDocs(collection(db, COL_REGS(ev.id)));
+    regs.docs.forEach((r) => todos.push(r.data()));
+  }
+
+  document.getElementById("statEventos").textContent = eventosSnap.size;
+  document.getElementById("statTotal").textContent = todos.length;
+  document.getElementById("statPromedio").textContent = eventosSnap.size
+    ? Math.round(todos.length / eventosSnap.size)
+    : 0;
+
+  const tot = todos.length || 1;
+
+  const deps = {};
+  todos.forEach((r) => (deps[r.dependencia] = (deps[r.dependencia] || 0) + 1));
+  document.getElementById("statDepTabla").innerHTML =
+    Object.entries(deps)
+      .sort((a, b) => b[1] - a[1])
+      .map(
+        ([dep, n]) =>
+          `<tr><td>${dep}</td><td style="font-weight:600">${n}</td><td>${Math.round((n / tot) * 100)}%</td></tr>`,
+      )
+      .join("") || '<tr><td colspan="3" class="sin-datos">Sin datos.</td></tr>';
+
+  const niveles = {};
+  todos.forEach((r) => (niveles[r.nivel] = (niveles[r.nivel] || 0) + 1));
+  document.getElementById("statNivelTabla").innerHTML =
+    Object.entries(niveles)
+      .sort((a, b) => b[1] - a[1])
+      .map(
+        ([niv, n]) =>
+          `<tr><td><span class="nivel-badge">${niv}</span></td><td style="font-weight:600">${n}</td><td>${Math.round((n / tot) * 100)}%</td></tr>`,
+      )
+      .join("") || '<tr><td colspan="3" class="sin-datos">Sin datos.</td></tr>';
+}
+
+/* ══════════════════════════════════════════
+   EXPORTAR
+══════════════════════════════════════════ */
+async function renderExportar() {
+  const snap = await getDocs(
+    query(collection(db, COL_EVENTOS), orderBy("creadoEn", "desc")),
+  );
+  const sel = document.getElementById("exportSelector");
+  sel.innerHTML =
+    '<option value="">— Seleccione evento —</option>' +
+    snap.docs
+      .map(
+        (d) =>
+          `<option value="${d.id}">${d.data().nombre} · ${d.data().fecha}</option>`,
+      )
+      .join("");
+}
+
+window.exportarTodo = async function () {
+  const btn = document.querySelector('[onclick="exportarTodo()"]');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "⏳ Generando…";
+  }
+  try {
+    if (ES_SERVIDOR_LOCAL) {
+      const resp = await fetch("/api/exportar-todo");
+      if (!resp.ok) {
+        const e = await resp.json();
+        throw new Error(e.error);
+      }
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "PTFT38_Todos_los_Eventos.xlsx";
+      a.click();
+      URL.revokeObjectURL(url);
+    } else {
+      const snap = await getDocs(collection(db, COL_EVENTOS));
+      let todos = [];
+      for (const ev of snap.docs) {
+        const regs = await getDocs(collection(db, COL_REGS(ev.id)));
+        regs.docs.forEach((r) =>
+          todos.push({
+            ...r.data(),
+            eventoNombre: ev.data().nombre,
+            eventoFecha: ev.data().fecha,
+          }),
+        );
+      }
+      if (!todos.length) {
+        alert("No hay registros para exportar.");
+        return;
+      }
+      const eventoGenerico = {
+        nombre: "Todos los Eventos",
+        fecha: new Date().toLocaleDateString("es-CO"),
+        institucion: "Registraduría Nacional del Estado Civil",
+        jornada: "",
+      };
+      await exportarPTFT38(eventoGenerico, todos, TEMPLATE_URL);
+    }
+  } catch (err) {
+    alert(`Error: ${err.message}`);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "📥 Descargar todos los registros";
+    }
+  }
+};
+
+window.exportarSeleccionado = async function () {
+  const evId = document.getElementById("exportSelector").value;
+  if (!evId) {
+    alert("Seleccione un evento.");
+    return;
+  }
+  await exportar(evId, null);
+};
+
+/* ══════════════════════════════════════════
+   CSV DOWNLOAD
+══════════════════════════════════════════ */
+function descargarCSV(registros, nombreArchivo) {
+  const cols = [
+    "No.",
+    "Evento",
+    "Fecha Evento",
+    "Cédula",
+    "Nombres y Apellidos",
+    "Dependencia",
+    "Sexo",
+    "Nivel del Cargo",
+    "Fecha y Hora Registro",
+  ];
+  const filas = registros.map((r, i) => {
+    const ts = r.creadoEn?.toDate
+      ? r.creadoEn.toDate().toLocaleString("es-CO")
+      : r.timestamp || "";
+    return [
+      i + 1,
+      `"${(r.eventoNombre || "").replace(/"/g, '""')}"`,
+      r.eventoFecha || "",
+      r.cedula,
+      `"${(r.nombre || "").replace(/"/g, '""')}"`,
+      `"${(r.dependencia || "").replace(/"/g, '""')}"`,
+      r.sexo,
+      r.nivel,
+      `"${ts}"`,
+    ].join(",");
+  });
+  const csv = "\uFEFF" + cols.join(",") + "\n" + filas.join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `PTFT38_${nombreArchivo.replace(/\s+/g, "_")}_${new Date().toLocaleDateString("es-CO").replace(/\//g, "-")}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ══════════════════════════════════════════
+   MODAL FIRMA
+══════════════════════════════════════════ */
+window.verFirma = function (src, nombre) {
+  document.getElementById("modalImg").src = src;
+  document.getElementById("modalNombre").textContent = nombre;
+  document.getElementById("modalFirma").classList.add("show");
+};
+window.cerrarModal = function () {
+  document.getElementById("modalFirma").classList.remove("show");
+};
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+document.addEventListener("DOMContentLoaded", () => {
+  const fechaEl = document.getElementById("evFecha");
+  if (fechaEl) fechaEl.valueAsDate = new Date();
+  tab("eventos");
+});

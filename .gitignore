@@ -1,0 +1,16 @@
+# Credenciales y secretos
+Python/serviceAccountKey.json
+
+# Reportes generados
+Python/reportes/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+*.code-workspace
+
+# Claude Code
+.claude/

@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="/img/icono.png" />
+    <title>Registro de Asistencia · PTFT38 | Registraduría Caquetá</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/css/asistencia.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- BARRA SUPERIOR -->
+    <div class="top-bar" style="width: 100%">
+      <div class="top-bar-inner">
+        <span class="top-bar-left"
+          >República de Colombia · Organización Electoral</span
+        >
+        <div class="top-bar-right">
+          <span>Registro de Asistencia</span>
+          <span class="top-bar-badge registro">Participante</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- HEADER -->
+    <div class="header" style="width: 100%">
+      <div class="header-main">
+        <div class="logo-wrap">
+          <img
+            src="/img/Logo 2.jpg"
+            alt="Registraduría"
+          />
+        </div>
+        <div class="header-text-group">
+          <div class="org-name">Registraduría Nacional del Estado Civil</div>
+          <div class="header-titulo">
+            Registro de Asistencia a <span>Evento de Capacitación</span>
+          </div>
+          <div class="header-subtitulo">
+            Permanencia del Talento Humano · Delegación Departamental Caquetá
+          </div>
+        </div>
+        <div class="ptft-badge">
+          <span class="ptft-code">PTFT38</span>
+          <span class="ptft-ver">Versión 5</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIN EVENTO -->
+    <div id="sinEvento" style="display: none; width: 100%; max-width: 600px">
+      <div class="card" style="text-align: center; padding: 52px 28px">
+        <div style="font-size: 48px; margin-bottom: 14px">🔒</div>
+        <h2 class="sin-ev-titulo">Enlace no válido</h2>
+        <p class="sin-ev-sub">
+          Este formulario debe abrirse con el enlace<br />
+          que le envió el administrador.<br /><br />
+          Comuníquese con la <strong>Delegación Departamental Caquetá</strong
+          ><br />
+          para obtener el enlace correcto.
+        </p>
+      </div>
+    </div>
+
+    <!-- CARGANDO -->
+    <div id="cargando" style="width: 100%; max-width: 600px">
+      <div class="card" style="text-align: center; padding: 52px 28px">
+        <div class="spinner-grande"></div>
+        <p style="margin-top: 16px; font-size: 13.5px; color: var(--gris-txt)">
+          Cargando evento…
+        </p>
+      </div>
+    </div>
+
+    <!-- FORMULARIO -->
+    <div class="card" id="cardFormulario" style="display: none">
+      <div class="card-body" id="formBody">
+        <div class="ev-banner">
+          <div class="ev-label">Está registrando asistencia para</div>
+          <div class="ev-nombre" id="evNombre">—</div>
+          <div class="ev-meta" id="evMeta">—</div>
+        </div>
+
+        <div class="field">
+          <label
+            ><span class="ico">🪪</span> Número de cédula
+            <span class="req">*</span></label
+          >
+          <input
+            type="text"
+            id="cedula"
+            inputmode="numeric"
+            placeholder="Ej. 1117234526"
+            maxlength="12"
+          />
+        </div>
+
+        <div class="field">
+          <label
+            ><span class="ico">👤</span> Nombres y apellidos completos
+            <span class="req">*</span></label
+          >
+          <input
+            type="text"
+            id="nombre"
+            placeholder="Ej. Claudia Maritza Sandoval Gasca"
+          />
+        </div>
+
+        <div class="field">
+          <label
+            ><span class="ico">📍</span> Dependencia
+            <span class="req">*</span></label
+          >
+          <div class="select-wrap">
+            <select id="dependencia">
+              <option value="">— Seleccione su dependencia —</option>
+              <option>Delegación Departamental</option>
+              <option>Registraduría Municipal de Albania</option>
+              <option>Registraduría Municipal de Belén de los Andaquíes</option>
+              <option>Registraduría Municipal de Cartagena del Chairá</option>
+              <option>Registraduría Municipal de Curillo</option>
+              <option>Registraduría Municipal de El Doncello</option>
+              <option>Registraduría Municipal de El Paujil</option>
+              <option>Registraduría Especial de Florencia</option>
+              <option>Registraduría Municipal de La Montañita</option>
+              <option>Registraduría Municipal de Morelia</option>
+              <option>Registraduría Municipal de Milán</option>
+              <option>Registraduría Municipal de Puerto Rico</option>
+              <option>Registraduría Municipal de San José del Fragua</option>
+              <option>Registraduría Municipal de San Vicente del Caguán</option>
+              <option>Registraduría Municipal de Solano</option>
+              <option>Registraduría Municipal de Solita</option>
+              <option>Registraduría Municipal de Valparaíso</option>
+            </select>
+          </div>
+        </div>
+
+        <hr class="sep" />
+
+        <div class="field">
+          <label
+            ><span class="ico">⚧</span> Sexo <span class="req">*</span></label
+          >
+          <div class="pills">
+            <div class="pill">
+              <input
+                type="radio"
+                name="sexo"
+                id="sexo_m"
+                value="Masculino"
+              /><label for="sexo_m">♂ &nbsp;Masculino</label>
+            </div>
+            <div class="pill">
+              <input
+                type="radio"
+                name="sexo"
+                id="sexo_f"
+                value="Femenino"
+              /><label for="sexo_f">♀ &nbsp;Femenino</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label
+            ><span class="ico">🏷</span> Nivel del cargo
+            <span class="req">*</span></label
+          >
+          <div class="pills nivel">
+            <div class="pill">
+              <input
+                type="radio"
+                name="nivel"
+                id="n_dir"
+                value="Directivo"
+              /><label for="n_dir">Directivo</label>
+            </div>
+            <div class="pill">
+              <input
+                type="radio"
+                name="nivel"
+                id="n_ase"
+                value="Asesor"
+              /><label for="n_ase">Asesor</label>
+            </div>
+            <div class="pill">
+              <input
+                type="radio"
+                name="nivel"
+                id="n_pro"
+                value="Profesional"
+              /><label for="n_pro">Profesional</label>
+            </div>
+            <div class="pill">
+              <input
+                type="radio"
+                name="nivel"
+                id="n_tec"
+                value="Técnico"
+              /><label for="n_tec">Técnico</label>
+            </div>
+            <div class="pill">
+              <input
+                type="radio"
+                name="nivel"
+                id="n_asi"
+                value="Asistencial"
+              /><label for="n_asi">Asistencial</label>
+            </div>
+          </div>
+        </div>
+
+        <hr class="sep" />
+
+        <div class="field">
+          <div class="sig-header">
+            <label>✍️ &nbsp;Firma digital <span class="req">*</span></label>
+            <button class="btn-clear" onclick="clearSig()">Borrar firma</button>
+          </div>
+          <div class="canvas-wrap" id="canvasWrap">
+            <canvas id="sigCanvas" width="540" height="130"></canvas>
+            <div class="canvas-hint" id="canvasHint">
+              <span>Dibuje su firma aquí con el ratón o el dedo</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-submit" id="btnEnviar" onclick="enviar()">
+          <span class="btn-txt">
+            <svg
+              width="17"
+              height="17"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Registrar mi asistencia
+          </span>
+          <div class="spinner"></div>
+        </button>
+      </div>
+
+      <!-- ÉXITO -->
+      <div class="success-panel" id="successPanel">
+        <div class="check-circle">
+          <svg
+            width="34"
+            height="34"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#fff"
+            stroke-width="2.5"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </div>
+        <h2 class="success-title">¡Asistencia registrada!</h2>
+        <p class="success-name" id="sNombre"></p>
+        <p class="success-dep" id="sDep"></p>
+        <p class="success-ev" id="sEv"></p>
+        <p class="success-sub">
+          Su asistencia quedó guardada en la base de datos. Gracias por
+          participar.
+        </p>
+        <button class="btn-nuevo" onclick="resetForm()">
+          Registrar otro participante
+        </button>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="page-footer">
+      <div class="footer-teal-bar"></div>
+      <div class="footer-body">
+        <img
+          class="footer-logo"
+          src="/img/Logo 2.jpg"
+          alt="Registraduría"
+        />
+        <div class="footer-divider"></div>
+        <div class="footer-info">
+          <div class="footer-org">Registraduría Nacional del Estado Civil</div>
+          <div class="footer-sub">
+            Delegación Departamental Caquetá<br />Permanencia del Talento Humano
+            · Formato PTFT38
+          </div>
+        </div>
+        <div class="footer-right-block">
+          <div class="footer-ptft">PTFT38</div>
+          <div class="footer-ver">Versión 5 · 2025</div>
+          <div class="e26-dots">
+            <div class="e26-dot" style="background: var(--e26-amarillo)"></div>
+            <div class="e26-dot" style="background: var(--e26-azul)"></div>
+            <div class="e26-dot" style="background: var(--e26-rojo)"></div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        Formato PTFT38 Ver. 5 · Aprobado 30/05/2025 · República de Colombia
+      </div>
+    </div>
+
+    <script type="module" src="/js/asistencia.js"></script>
+  </body>
+</html>
