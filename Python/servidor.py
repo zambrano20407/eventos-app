@@ -89,6 +89,12 @@ def generar_excel(evento, registros):
     ws['O9'].value  = f"Jornada:  {evento.get('jornada','')}"
     ws['B10'].value = f"Nombre del curso / formacion / capacitacion:  {evento.get('nombre','')}"
 
+    # Limpiar filas de datos antes de escribir (evita datos residuales de la plantilla)
+    COLUMNAS_DATOS = [3, 5, 7, 8, 9, 10, 11, 12, 13, 15]
+    for fila_limpia in range(13, 38):
+        for col in COLUMNAS_DATOS:
+            ws.cell(row=fila_limpia, column=col).value = None
+
     con_firma = 0
     for i, reg in enumerate(registros[:25]):
         fila  = 13 + i
