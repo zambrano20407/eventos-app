@@ -522,6 +522,7 @@ tbody td {
   font-size: 13.5px;
 }
 
+
 /* ══ RESPONSIVE ADMIN ══ */
 @media (max-width: 600px) {
   .card-body {
