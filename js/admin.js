@@ -33,7 +33,7 @@ const COL_EVENTOS = "eventos";
 const COL_REGS = (evId) => `eventos/${evId}/registros`;
 
 const TEMPLATE_URL = "./formato_ptft38.xlsx";
-const URL_ASISTENCIA = "vistas/asistencia.html";
+const URL_ASISTENCIA = "/vistas/asistencia.html";
 
 // ── Detectar si estamos en el servidor local Python ──────────
 const ES_SERVIDOR_LOCAL =
@@ -574,7 +574,24 @@ window.cerrarModal = function () {
    INIT
 ══════════════════════════════════════════ */
 document.addEventListener("DOMContentLoaded", () => {
+  // Fecha mínima = hoy (no permite fechas pasadas)
   const fechaEl = document.getElementById("evFecha");
-  if (fechaEl) fechaEl.valueAsDate = new Date();
+  if (fechaEl) {
+    const hoy = new Date().toISOString().split("T")[0];
+    fechaEl.min = hoy;
+    fechaEl.valueAsDate = new Date();
+  }
+
+  // Mayúsculas automáticas en campos del formulario de evento
+  ["evNombre", "evInstitucion"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener("input", () => {
+      const pos = el.selectionStart;
+      el.value = el.value.toUpperCase();
+      el.setSelectionRange(pos, pos);
+    });
+  });
+
   tab("eventos");
 });

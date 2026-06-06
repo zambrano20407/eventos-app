@@ -4,6 +4,9 @@ import {
   addDoc,
   doc,
   getDoc,
+  getDocs,
+  query,
+  where,
   Timestamp,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -252,6 +255,24 @@ window.enviar = async function () {
 
   const btn = document.getElementById("btnEnviar");
   btn.classList.add("loading");
+
+  // Verificar que la cédula no esté ya registrada en este evento
+  try {
+    const cedulaVal = document.getElementById("cedula").value.trim();
+    const duplicado = await getDocs(
+      query(
+        collection(db, `eventos/${eventoActivo.id}/registros`),
+        where("cedula", "==", cedulaVal)
+      )
+    );
+    if (!duplicado.empty) {
+      alert(`⚠️ La cédula ${cedulaVal} ya está registrada en este evento.`);
+      btn.classList.remove("loading");
+      return;
+    }
+  } catch (err) {
+    console.error("Error verificando cédula duplicada:", err);
+  }
 
   const registro = {
     eventoId: eventoActivo.id,
