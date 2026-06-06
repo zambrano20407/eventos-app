@@ -356,12 +356,10 @@ window.cargarRegistros = async function () {
       .map((d, i) => {
         const r = { id: d.id, ...d.data() };
         const hora = r.creadoEn?.toDate
-          ? r.creadoEn
-              .toDate()
-              .toLocaleTimeString("es-CO", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
+          ? r.creadoEn.toDate().toLocaleTimeString("es-CO", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
           : r.timestamp || "";
         return `
       <tr>
