@@ -1,4 +1,4 @@
-import { db } from "./firebase-config.js";
+import { db, auth } from "./firebase-config.js";
 import {
   collection,
   addDoc,
@@ -9,6 +9,26 @@ import {
   orderBy,
   Timestamp,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  onAuthStateChanged,
+  signOut,
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+// Proteger el panel: si no hay sesión → login
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.replace("/vistas/login.html");
+  } else {
+    const badge = document.querySelector(".admin-badge");
+    if (badge) badge.title = user.email;
+  }
+});
+
+// Cerrar sesión
+window.cerrarSesion = async function () {
+  await signOut(auth);
+  window.location.replace("/vistas/login.html");
+};
 
 // exportar.js se carga de forma dinamica cuando se necesita
 let exportarPTFT38 = null;
