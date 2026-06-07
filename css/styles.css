@@ -369,6 +369,17 @@ body > * {
   height: 9px;
   border-radius: 50%;
 }
+.btn-logout {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 2px;
+  background: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.7);
+  border: 1px solid rgba(255,255,255,0.2);
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-logout:hover { background: rgba(255,255,255,0.22); color: #fff; }
 .footer-dir {
   font-size: 10.5px;
   color: rgba(255, 255, 255, 0.5);

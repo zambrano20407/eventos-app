@@ -140,6 +140,10 @@ class Handler(SimpleHTTPRequestHandler):
         except Exception:
             pass
 
+    def handle_error(self, request, client_address):
+        # Silenciar errores de conexión cerrada por el navegador
+        pass
+
     def do_OPTIONS(self):
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
@@ -262,10 +266,10 @@ def main():
     os.chdir(BASE_DIR)
 
     servidor = HTTPServer(('localhost', PUERTO), Handler)
-    url      = f'http://localhost:{PUERTO}/vistas/admin.html'
+    url      = f'http://localhost:{PUERTO}/vistas/login.html'
 
     print(f"🚀 Servidor iniciado en: http://localhost:{PUERTO}")
-    print(f"📋 Panel Admin:          {url}")
+    print(f"📋 Panel Login:          {url}")
     print(f"\n   Presione Ctrl+C para detener el servidor")
     print("─" * 54 + "\n")
 
