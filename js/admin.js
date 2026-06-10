@@ -7,6 +7,7 @@ import {
   doc,
   query,
   orderBy,
+  onSnapshot,
   Timestamp,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {
@@ -251,6 +252,62 @@ window.copiarLink = function (evId) {
 };
 
 /* ══════════════════════════════════════════
+   CÓDIGO QR
+══════════════════════════════════════════ */
+// Cargar la librería de QR una sola vez (desde CDN)
+async function cargarQRCode() {
+  if (window.QRCode) return;
+  await new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js";
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+window.verQR = async function (evId, nombre) {
+  try {
+    await cargarQRCode();
+  } catch (e) {
+    alert("No se pudo cargar el generador de QR. Verifique su conexión.");
+    return;
+  }
+
+  const link = generarLink(evId);
+  const cont = document.getElementById("qrContainer");
+  cont.innerHTML = ""; // limpiar QR anterior
+
+  new QRCode(cont, {
+    text: link,
+    width: 260,
+    height: 260,
+    colorDark: "#0B2252", // azul institucional
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.H,
+  });
+
+  document.getElementById("qrNombre").textContent = nombre;
+  document.getElementById("qrLink").textContent = link;
+  document.getElementById("modalQR").classList.add("show");
+};
+
+window.cerrarModalQR = function () {
+  document.getElementById("modalQR").classList.remove("show");
+};
+
+window.descargarQR = function () {
+  // El QR se dibuja en un <canvas>; lo convertimos en imagen PNG
+  const canvas = document.querySelector("#qrContainer canvas");
+  if (!canvas) return;
+  const a = document.createElement("a");
+  a.href = canvas.toDataURL("image/png");
+  const nombre = document.getElementById("qrNombre").textContent || "Evento";
+  a.download = `QR_${nombre.replace(/\s+/g, "_")}.png`;
+  a.click();
+};
+
+/* ══════════════════════════════════════════
    RENDER EVENTOS
 ══════════════════════════════════════════ */
 async function renderEventos() {
@@ -290,6 +347,7 @@ async function renderEventos() {
           </div>
           <div class="ev-item-actions">
             <span class="ev-count ${count === 0 ? "cero" : ""}">${count} reg.</span>
+            <button class="btn-qr" onclick="verQR('${ev.id}','${(ev.nombre || "").replace(/'/g, "\\'")}')">▦ Código QR</button>
             <button class="btn-danger" onclick="eliminarEvento('${ev.id}')">✕ Eliminar</button>
           </div>
         </div>
@@ -331,10 +389,20 @@ async function renderRegistrosPanel() {
   if (prev) cargarRegistros();
 }
 
+// Guardamos aquí la "suscripción" activa para poder apagarla
+// cuando el usuario cambie de evento (si no, quedarían varias escuchando)
+let _unsubRegistros = null;
+
 window.cargarRegistros = async function () {
   const evId = document.getElementById("regSelector").value;
   const btnEx = document.getElementById("btnExportarEv");
   const tabla = document.getElementById("regTabla");
+
+  // Apagar la escucha anterior si existía
+  if (_unsubRegistros) {
+    _unsubRegistros();
+    _unsubRegistros = null;
+  }
 
   if (!evId) {
     tabla.innerHTML =
@@ -342,7 +410,7 @@ window.cargarRegistros = async function () {
     document.getElementById("regTitulo").textContent =
       "Registros de asistencia";
     document.getElementById("regSub").textContent = "";
-    document.getElementById("regConteo").textContent = "";
+    document.getElementById("regConteo").innerHTML = "";
     btnEx.style.display = "none";
     return;
   }
@@ -352,9 +420,6 @@ window.cargarRegistros = async function () {
   try {
     const evDoc = await getDocs(collection(db, COL_EVENTOS));
     const ev = evDoc.docs.find((d) => d.id === evId)?.data();
-    const regs = await getDocs(
-      query(collection(db, COL_REGS(evId)), orderBy("creadoEn", "asc")),
-    );
 
     document.getElementById("regTitulo").textContent = ev
       ? ev.nombre
@@ -362,26 +427,34 @@ window.cargarRegistros = async function () {
     document.getElementById("regSub").textContent = ev
       ? [ev.fecha, ev.jornada, ev.institucion].filter(Boolean).join(" · ")
       : "";
-    document.getElementById("regConteo").textContent =
-      `${regs.size} participante(s) registrado(s)`;
-    btnEx.style.display = regs.size ? "inline-flex" : "none";
+    window._evActual = ev;
 
-    if (regs.empty) {
-      tabla.innerHTML =
-        '<tr><td colspan="8" class="sin-datos">Sin registros en este evento.</td></tr>';
-      return;
-    }
+    // ── Escucha en TIEMPO REAL: Firestore nos avisa cada vez
+    //    que alguien se registra y la tabla se redibuja sola ──
+    _unsubRegistros = onSnapshot(
+      query(collection(db, COL_REGS(evId)), orderBy("creadoEn", "asc")),
+      (regs) => {
+        document.getElementById("regConteo").innerHTML =
+          `<span class="live-dot"></span> EN VIVO · ${regs.size} participante(s) registrado(s)`;
+        btnEx.style.display = regs.size ? "inline-flex" : "none";
 
-    tabla.innerHTML = regs.docs
-      .map((d, i) => {
-        const r = { id: d.id, ...d.data() };
-        const hora = r.creadoEn?.toDate
-          ? r.creadoEn.toDate().toLocaleTimeString("es-CO", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-          : r.timestamp || "";
-        return `
+        if (regs.empty) {
+          tabla.innerHTML =
+            '<tr><td colspan="8" class="sin-datos">Sin registros en este evento.<br><small>Esta tabla se actualiza sola cuando alguien se registre.</small></td></tr>';
+          window._regActuales = [];
+          return;
+        }
+
+        tabla.innerHTML = regs.docs
+          .map((d, i) => {
+            const r = { id: d.id, ...d.data() };
+            const hora = r.creadoEn?.toDate
+              ? r.creadoEn.toDate().toLocaleTimeString("es-CO", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : r.timestamp || "";
+            return `
       <tr>
         <td style="font-weight:600;color:var(--txt)">${i + 1}</td>
         <td>${r.cedula}</td>
@@ -392,12 +465,18 @@ window.cargarRegistros = async function () {
         <td style="font-size:11px;color:var(--txt)">${hora}</td>
         <td><img class="thumb-firma" src="${r.firma}" onclick="verFirma('${r.firma}','${r.nombre.replace(/'/g, "\\'")}')"></td>
       </tr>`;
-      })
-      .join("");
+          })
+          .join("");
 
-    // Guardar para exportar
-    window._regActuales = regs.docs.map((d) => ({ id: d.id, ...d.data() }));
-    window._evActual = ev;
+        // Guardar para exportar (siempre actualizado)
+        window._regActuales = regs.docs.map((d) => ({ id: d.id, ...d.data() }));
+      },
+      (err) => {
+        console.error("Error en tiempo real:", err);
+        tabla.innerHTML =
+          '<tr><td colspan="8" class="sin-datos" style="color:var(--error)">Error al cargar. Revise la consola.</td></tr>';
+      },
+    );
   } catch (err) {
     console.error("Error cargando registros:", err);
     tabla.innerHTML =

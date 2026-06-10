@@ -523,6 +523,93 @@ tbody td {
 }
 
 
+/* ══ CÓDIGO QR ══ */
+.btn-qr {
+  font-family: "Montserrat", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border: 1.5px solid var(--azul-boton);
+  border-radius: 5px;
+  background: #fff;
+  color: var(--azul-boton);
+  cursor: pointer;
+  transition: all 0.18s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.btn-qr:hover {
+  background: var(--azul-boton);
+  color: #fff;
+}
+.qr-evento-nombre {
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--tinta);
+  margin-bottom: 14px;
+}
+.qr-container {
+  display: flex;
+  justify-content: center;
+  padding: 14px;
+  background: #fff;
+  border: 1.5px solid var(--gris-bd);
+  border-radius: 8px;
+  margin: 0 auto 12px;
+  width: fit-content;
+}
+.qr-container img,
+.qr-container canvas {
+  display: block;
+}
+.qr-link {
+  font-family: monospace;
+  font-size: 10.5px;
+  color: var(--gris-txt);
+  word-break: break-all;
+  background: var(--gris-bg);
+  border-radius: 5px;
+  padding: 7px 10px;
+  margin-bottom: 10px;
+}
+.qr-hint {
+  font-size: 12px;
+  color: var(--gris-txt);
+  line-height: 1.55;
+  margin-bottom: 16px;
+}
+.qr-btns {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ══ INDICADOR EN VIVO ══ */
+.live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--verde);
+  margin-right: 3px;
+  vertical-align: middle;
+  animation: livePulse 1.4s ease-in-out infinite;
+}
+@keyframes livePulse {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(0, 160, 100, 0.45);
+  }
+  50% {
+    opacity: 0.6;
+    box-shadow: 0 0 0 5px rgba(0, 160, 100, 0);
+  }
+}
+
 /* ══ RESPONSIVE ADMIN ══ */
 @media (max-width: 600px) {
   .card-body {
