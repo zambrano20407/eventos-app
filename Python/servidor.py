@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, sys, json, base64, io, shutil, threading, webbrowser
+import os, sys, json, base64, io, shutil, threading, webbrowser, unicodedata
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from datetime import datetime
 from urllib.parse import urlparse, parse_qs
@@ -70,6 +70,47 @@ def insertar_firma(ws, firma_b64, fila):
         print(f"  ⚠️  Firma fila {fila}: {e}")
         return False
 
+# ── Normalizar texto: minusculas y sin tildes ────────────────
+def normalizar(texto):
+    texto = (texto or '').lower()
+    return ''.join(
+        c for c in unicodedata.normalize('NFD', texto)
+        if unicodedata.category(c) != 'Mn'
+    )
+
+# ── Llenar UNA hoja con encabezado y hasta 25 registros ──────
+REGISTROS_POR_HOJA = 25
+
+def llenar_hoja(ws, evento, registros):
+    ws['B9'].value  = f"Institucion que dicta el curso / formacion / capacitacion:  {evento.get('institucion','')}"
+    ws['I9'].value  = f"Fecha:  {evento.get('fecha','')}"
+    ws['O9'].value  = f"Jornada:  {evento.get('jornada','')}"
+    ws['B10'].value = f"Nombre del curso / formacion / capacitacion:  {evento.get('nombre','')}"
+
+    # Limpiar filas de datos antes de escribir (evita datos residuales de la plantilla)
+    COLUMNAS_DATOS = [3, 5, 7, 8, 9, 10, 11, 12, 13, 15]
+    for fila_limpia in range(13, 38):
+        for col in COLUMNAS_DATOS:
+            ws.cell(row=fila_limpia, column=col).value = None
+
+    con_firma = 0
+    for i, reg in enumerate(registros[:REGISTROS_POR_HOJA]):
+        fila  = 13 + i
+        # Sin tildes: "Técnico" → "tecnico" (igual que en el navegador)
+        nivel = normalizar(reg.get('nivel'))
+        ws.cell(row=fila, column=3).value  = reg.get('cedula','')
+        ws.cell(row=fila, column=5).value  = reg.get('nombre','')
+        ws.cell(row=fila, column=7).value  = reg.get('dependencia','')
+        ws.cell(row=fila, column=8).value  = (reg.get('sexo') or 'M')[0].upper()
+        ws.cell(row=fila, column=9 ).value = 'X' if nivel == 'directivo'   else ''
+        ws.cell(row=fila, column=10).value = 'X' if nivel == 'asesor'      else ''
+        ws.cell(row=fila, column=11).value = 'X' if nivel == 'profesional' else ''
+        ws.cell(row=fila, column=12).value = 'X' if nivel == 'tecnico'     else ''
+        ws.cell(row=fila, column=13).value = 'X' if nivel == 'asistencial' else ''
+        if insertar_firma(ws, reg.get('firma',''), fila):
+            con_firma += 1
+    return con_firma
+
 # ── Generar Excel ─────────────────────────────────────────────
 def generar_excel(evento, registros):
     if not os.path.exists(RUTA_TEMPLATE):
@@ -84,35 +125,32 @@ def generar_excel(evento, registros):
     wb = openpyxl.load_workbook(salida)
     ws = wb.active
 
-    ws['B9'].value  = f"Institucion que dicta el curso / formacion / capacitacion:  {evento.get('institucion','')}"
-    ws['I9'].value  = f"Fecha:  {evento.get('fecha','')}"
-    ws['O9'].value  = f"Jornada:  {evento.get('jornada','')}"
-    ws['B10'].value = f"Nombre del curso / formacion / capacitacion:  {evento.get('nombre','')}"
+    # Partir los registros en grupos de 25 (una hoja por grupo)
+    grupos = [registros[i:i+REGISTROS_POR_HOJA]
+              for i in range(0, len(registros), REGISTROS_POR_HOJA)] or [[]]
 
-    # Limpiar filas de datos antes de escribir (evita datos residuales de la plantilla)
-    COLUMNAS_DATOS = [3, 5, 7, 8, 9, 10, 11, 12, 13, 15]
-    for fila_limpia in range(13, 38):
-        for col in COLUMNAS_DATOS:
-            ws.cell(row=fila_limpia, column=col).value = None
-
+    nombre_base = ws.title
     con_firma = 0
-    for i, reg in enumerate(registros[:25]):
-        fila  = 13 + i
-        nivel = (reg.get('nivel') or '').lower()
-        ws.cell(row=fila, column=3).value  = reg.get('cedula','')
-        ws.cell(row=fila, column=5).value  = reg.get('nombre','')
-        ws.cell(row=fila, column=7).value  = reg.get('dependencia','')
-        ws.cell(row=fila, column=8).value  = (reg.get('sexo') or 'M')[0].upper()
-        ws.cell(row=fila, column=9 ).value = 'X' if nivel == 'directivo'   else ''
-        ws.cell(row=fila, column=10).value = 'X' if nivel == 'asesor'      else ''
-        ws.cell(row=fila, column=11).value = 'X' if nivel == 'profesional' else ''
-        ws.cell(row=fila, column=12).value = 'X' if nivel == 'tecnico'     else ''
-        ws.cell(row=fila, column=13).value = 'X' if nivel == 'asistencial' else ''
-        if insertar_firma(ws, reg.get('firma',''), fila):
-            con_firma += 1
+    for g, grupo in enumerate(grupos):
+        if g == 0:
+            hoja = ws
+            if len(grupos) > 1:
+                hoja.title = f"{nombre_base} (1)"
+        else:
+            # copy_worksheet duplica formato, celdas combinadas y anchos,
+            # pero NO las imagenes: reinsertamos el logo manualmente
+            hoja = wb.copy_worksheet(ws)
+            hoja.title = f"{nombre_base} ({g+1})"
+            ruta_logo = os.path.join(BASE_DIR, 'img', 'LogoFormato.jpg')
+            if os.path.exists(ruta_logo):
+                logo = XLImage(ruta_logo)
+                logo.width, logo.height = 170, 75
+                logo.anchor = 'B2'
+                hoja.add_image(logo)
+        con_firma += llenar_hoja(hoja, evento, grupo)
 
     wb.save(salida)
-    print(f"  ✅ Excel generado: {salida} ({con_firma} firmas)")
+    print(f"  ✅ Excel generado: {salida} ({len(grupos)} hoja(s), {con_firma} firmas)")
     return salida, None
 
 # ── Firebase helpers ──────────────────────────────────────────
