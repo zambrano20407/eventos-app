@@ -587,6 +587,54 @@ tbody td {
   flex-wrap: wrap;
 }
 
+/* ══ CERRAR / REABRIR EVENTO ══ */
+.btn-cerrar {
+  font-family: "Montserrat", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border: 1.5px solid #e0c068;
+  border-radius: 5px;
+  background: #fffbeb;
+  color: #92400e;
+  cursor: pointer;
+  transition: all 0.18s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.btn-cerrar:hover {
+  background: #f59e0b;
+  border-color: #f59e0b;
+  color: #fff;
+}
+.btn-cerrar.reabrir {
+  border-color: var(--verde);
+  background: #f0fdf6;
+  color: var(--verde);
+}
+.btn-cerrar.reabrir:hover {
+  background: var(--verde);
+  color: #fff;
+}
+.ev-item.cerrado {
+  background: var(--gris-bg);
+  opacity: 0.85;
+}
+.badge-cerrado {
+  display: inline-block;
+  font-family: "Montserrat", sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: #92400e;
+  color: #fff;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
 /* ══ INDICADOR EN VIVO ══ */
 .live-dot {
   display: inline-block;

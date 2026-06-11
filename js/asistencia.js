@@ -41,6 +41,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     eventoActivo = { id: evDoc.id, ...evDoc.data() };
+
+    // Si el administrador cerró el evento, no se permite registrar
+    if (eventoActivo.cerrado) {
+      mostrarEventoCerrado(eventoActivo);
+      return;
+    }
+
     mostrarFormulario(eventoActivo);
     iniciarCanvas(); // ← canvas se inicia DESPUÉS de mostrar el formulario
     iniciarInputs(); // ← restricciones de teclado
@@ -57,6 +64,24 @@ function mostrarSinEvento() {
   document.getElementById("cargando").style.display = "none";
   document.getElementById("sinEvento").style.display = "flex";
   document.getElementById("cardFormulario").style.display = "none";
+}
+
+function mostrarEventoCerrado(ev) {
+  // Reutilizamos el panel "sin evento" pero con mensaje de evento cerrado
+  const panel = document.getElementById("sinEvento");
+  panel.querySelector(".card").innerHTML = `
+    <div style="font-size: 48px; margin-bottom: 14px">🔒</div>
+    <h2 class="sin-ev-titulo">Evento cerrado</h2>
+    <p class="sin-ev-sub">
+      El registro de asistencia para<br />
+      <strong>${ev.nombre}</strong><br />
+      ya fue cerrado por el administrador.<br /><br />
+      Si considera que es un error, comuníquese con la
+      <strong>Delegación Departamental Caquetá</strong>.
+    </p>`;
+  document.getElementById("cargando").style.display = "none";
+  document.getElementById("cardFormulario").style.display = "none";
+  panel.style.display = "flex";
 }
 
 function mostrarFormulario(ev) {
@@ -255,6 +280,19 @@ window.enviar = async function () {
 
   const btn = document.getElementById("btnEnviar");
   btn.classList.add("loading");
+
+  // Verificar que el evento siga abierto (pudo cerrarse mientras
+  // el participante tenía el formulario abierto en pantalla)
+  try {
+    const evFresco = await getDoc(doc(db, "eventos", eventoActivo.id));
+    if (evFresco.exists() && evFresco.data().cerrado) {
+      btn.classList.remove("loading");
+      mostrarEventoCerrado(eventoActivo);
+      return;
+    }
+  } catch (err) {
+    console.error("Error verificando estado del evento:", err);
+  }
 
   // Verificar que la cédula no esté ya registrada en este evento
   try {
