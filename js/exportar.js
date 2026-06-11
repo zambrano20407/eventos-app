@@ -2,7 +2,10 @@
    exportar.js — Generacion de Excel con ExcelJS (sin servidor)
    Usa la plantilla PTFT38 limpia y replica exactamente
    el comportamiento del servidor Python con firmas digitales.
+   Si hay mas de 25 registros, crea una hoja por cada grupo de 25.
    ============================================================ */
+
+const REGISTROS_POR_HOJA = 25;
 
 async function cargarExcelJS() {
   if (window.ExcelJS) return;
@@ -15,33 +18,16 @@ async function cargarExcelJS() {
   });
 }
 
-export async function exportarPTFT38(evento, registros) {
-  await cargarExcelJS();
-
-  // ── Cargar plantilla limpia desde hosting ──
-  const resp = await fetch("/formato_ptft38.xlsx");
-  if (!resp.ok) throw new Error("No se pudo cargar la plantilla Excel.");
-  const arrayBuffer = await resp.arrayBuffer();
-
-  const wb = new ExcelJS.Workbook();
-  await wb.xlsx.load(arrayBuffer);
-  const ws = wb.worksheets[0];
-
+/* ── Llena UNA hoja con el encabezado, logo y hasta 25 registros ── */
+function llenarHoja(wb, ws, evento, registros, logoBase64) {
   // ── Insertar logo de la Registraduría en B2:C5 ──
-  try {
-    const logoResp = await fetch("/img/LogoFormato.jpg");
-    const logoBuffer = await logoResp.arrayBuffer();
-    const logoBase64 = btoa(
-      new Uint8Array(logoBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
-    );
+  if (logoBase64) {
     const logoId = wb.addImage({ base64: logoBase64, extension: "jpeg" });
     ws.addImage(logoId, {
       tl:  { col: 1, row: 1 },       // B2 (col 1, row 1 en índice 0)
       br:  { col: 3, row: 5 },       // hasta C5
       editAs: "oneCell",
     });
-  } catch (e) {
-    console.warn("Logo no insertado:", e.message);
   }
 
   // ── Llenar encabezado igual que Python ──
@@ -57,12 +43,11 @@ export async function exportarPTFT38(evento, registros) {
     });
   }
 
-  // ── Llenar registros ──
+  // ── Llenar registros (máximo 25 por hoja) ──
   let conFirma = 0;
-  const lista = registros.slice(0, 25);
 
-  for (let i = 0; i < lista.length; i++) {
-    const reg  = lista[i];
+  for (let i = 0; i < registros.length; i++) {
+    const reg  = registros[i];
     const fila = 13 + i;
     // Normalizar: quitar acentos y pasar a minúsculas para comparar
     const nivel = (reg.nivel || "")
@@ -99,6 +84,60 @@ export async function exportarPTFT38(evento, registros) {
     }
   }
 
+  return conFirma;
+}
+
+export async function exportarPTFT38(evento, registros) {
+  await cargarExcelJS();
+
+  // ── Cargar plantilla limpia desde hosting ──
+  const resp = await fetch("/formato_ptft38.xlsx");
+  if (!resp.ok) throw new Error("No se pudo cargar la plantilla Excel.");
+  const templateBuffer = await resp.arrayBuffer();
+
+  // ── Cargar logo una sola vez ──
+  let logoBase64 = null;
+  try {
+    const logoResp = await fetch("/img/LogoFormato.jpg");
+    const logoBuffer = await logoResp.arrayBuffer();
+    logoBase64 = btoa(
+      new Uint8Array(logoBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
+    );
+  } catch (e) {
+    console.warn("Logo no cargado:", e.message);
+  }
+
+  // ── Partir los registros en grupos de 25 (uno por hoja) ──
+  const grupos = [];
+  for (let i = 0; i < registros.length; i += REGISTROS_POR_HOJA) {
+    grupos.push(registros.slice(i, i + REGISTROS_POR_HOJA));
+  }
+  if (grupos.length === 0) grupos.push([]);
+
+  const wb = new ExcelJS.Workbook();
+  await wb.xlsx.load(templateBuffer);
+  const hojaBase = wb.worksheets[0];
+  const nombreBase = hojaBase.name;
+
+  let conFirma = 0;
+
+  for (let g = 0; g < grupos.length; g++) {
+    let ws;
+    if (g === 0) {
+      ws = hojaBase;
+      if (grupos.length > 1) ws.name = `${nombreBase} (1)`;
+    } else {
+      // Clonar la hoja plantilla: copiamos su "modelo" (formato,
+      // celdas combinadas, anchos de columna) a una hoja nueva
+      ws = wb.addWorksheet(`${nombreBase} (${g + 1})`);
+      ws.model = Object.assign({}, hojaBase.model, {
+        mergeCells: hojaBase.model.merges,
+      });
+      ws.name = `${nombreBase} (${g + 1})`;
+    }
+    conFirma += llenarHoja(wb, ws, evento, grupos[g], logoBase64);
+  }
+
   // ── Descargar ──
   const buffer = await wb.xlsx.writeBuffer();
   const blob   = new Blob([buffer], {
@@ -111,5 +150,7 @@ export async function exportarPTFT38(evento, registros) {
   a.click();
   URL.revokeObjectURL(url);
 
-  console.log(`✅ Excel generado con ${conFirma} firmas`);
+  console.log(
+    `✅ Excel generado: ${grupos.length} hoja(s), ${registros.length} registro(s), ${conFirma} firma(s)`
+  );
 }

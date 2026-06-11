@@ -4,6 +4,7 @@ import {
   addDoc,
   getDocs,
   deleteDoc,
+  updateDoc,
   doc,
   query,
   orderBy,
@@ -230,6 +231,25 @@ window.eliminarEvento = async function (evId) {
 };
 
 /* ══════════════════════════════════════════
+   CERRAR / REABRIR EVENTO
+══════════════════════════════════════════ */
+window.toggleCerrarEvento = async function (evId, cerrado) {
+  const msg = cerrado
+    ? "¿Reabrir este evento? Los participantes podrán volver a registrarse."
+    : "¿Cerrar este evento? Nadie más podrá registrar asistencia (el enlace y el QR dejarán de aceptar registros).";
+  if (!confirm(msg)) return;
+
+  try {
+    // Solo cambiamos una "banderita" en el evento: cerrado = true/false
+    await updateDoc(doc(db, COL_EVENTOS, evId), { cerrado: !cerrado });
+    renderEventos();
+  } catch (err) {
+    console.error("Error cambiando estado del evento:", err);
+    alert("Error al cambiar el estado. Revise la consola.");
+  }
+};
+
+/* ══════════════════════════════════════════
    COPIAR ENLACE
 ══════════════════════════════════════════ */
 window.copiarLink = function (evId) {
@@ -337,17 +357,21 @@ async function renderEventos() {
     list.innerHTML = items
       .map(({ ev, count }) => {
         const lnk = generarLink(ev.id);
+        const cerrado = !!ev.cerrado;
         return `
-      <div class="ev-item">
+      <div class="ev-item ${cerrado ? "cerrado" : ""}">
         <div class="ev-item-top">
-          <div class="ev-item-icon">📋</div>
+          <div class="ev-item-icon">${cerrado ? "🔒" : "📋"}</div>
           <div class="ev-item-info">
-            <div class="ev-item-nombre">${ev.nombre}</div>
+            <div class="ev-item-nombre">${ev.nombre} ${cerrado ? '<span class="badge-cerrado">CERRADO</span>' : ""}</div>
             <div class="ev-item-meta">${[ev.fecha, ev.jornada, ev.institucion].filter(Boolean).join(" · ")}</div>
           </div>
           <div class="ev-item-actions">
             <span class="ev-count ${count === 0 ? "cero" : ""}">${count} reg.</span>
             <button class="btn-qr" onclick="verQR('${ev.id}','${(ev.nombre || "").replace(/'/g, "\\'")}')">▦ Código QR</button>
+            <button class="btn-cerrar ${cerrado ? "reabrir" : ""}" onclick="toggleCerrarEvento('${ev.id}', ${cerrado})">
+              ${cerrado ? "🔓 Reabrir" : "🔒 Cerrar"}
+            </button>
             <button class="btn-danger" onclick="eliminarEvento('${ev.id}')">✕ Eliminar</button>
           </div>
         </div>
