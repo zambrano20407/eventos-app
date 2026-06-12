@@ -73,7 +73,7 @@ console.log("admin.js conectado con Firebase");
 const COL_EVENTOS = "eventos";
 const COL_REGS = (evId) => `eventos/${evId}/registros`;
 
-const TEMPLATE_URL = "./formato_ptft38.xlsx";
+const TEMPLATE_URL = "/PTFT38.xlsx";
 const URL_ASISTENCIA = "/vistas/asistencia.html";
 
 // ── Detectar si estamos en el servidor local Python ──────────
