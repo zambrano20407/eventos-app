@@ -455,6 +455,8 @@ window.cargarRegistros = async function () {
     document.getElementById("regSub").textContent = "";
     document.getElementById("regConteo").innerHTML = "";
     btnEx.style.display = "none";
+    const btnPdfOff = document.getElementById("btnExportarPdf");
+    if (btnPdfOff) btnPdfOff.style.display = "none";
     return;
   }
 
@@ -480,6 +482,8 @@ window.cargarRegistros = async function () {
         document.getElementById("regConteo").innerHTML =
           `<span class="live-dot"></span> EN VIVO · ${regs.size} participante(s) registrado(s)`;
         btnEx.style.display = regs.size ? "inline-flex" : "none";
+        const btnPdf = document.getElementById("btnExportarPdf");
+        if (btnPdf) btnPdf.style.display = regs.size ? "inline-flex" : "none";
 
         if (regs.empty) {
           tabla.innerHTML =
@@ -531,6 +535,59 @@ window.exportarEvento = async function () {
   if (!window._regActuales?.length) return;
   const evId = document.getElementById("regSelector").value;
   await exportar(evId, "btnExportarEv");
+};
+
+/* ══════════════════════════════════════════
+   EXPORTAR A PDF
+══════════════════════════════════════════ */
+window.exportarEventoPDF = async function (botonId) {
+  const btn = botonId ? document.getElementById(botonId) : null;
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "⏳ Generando PDF…";
+  }
+  try {
+    if (!window._regActuales?.length || !window._evActual) {
+      alert("Primero seleccione un evento con registros.");
+      return;
+    }
+    const mod = await import("./exportar-pdf.js");
+    await mod.exportarPDF(window._evActual, window._regActuales);
+  } catch (err) {
+    console.error("Error generando PDF:", err);
+    alert(`Error al generar el PDF:\n${err.message}`);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "📄 Exportar PDF";
+    }
+  }
+};
+
+// Desde la pestaña Exportar: carga los registros del evento elegido y genera el PDF
+window.exportarSeleccionadoPDF = async function () {
+  const evId = document.getElementById("exportSelector").value;
+  if (!evId) {
+    alert("Seleccione un evento.");
+    return;
+  }
+  try {
+    const evDoc = await getDocs(collection(db, COL_EVENTOS));
+    const ev = evDoc.docs.find((d) => d.id === evId)?.data();
+    const regs = await getDocs(
+      query(collection(db, COL_REGS(evId)), orderBy("creadoEn", "asc")),
+    );
+    if (regs.empty) {
+      alert("El evento no tiene registros.");
+      return;
+    }
+    window._evActual = ev;
+    window._regActuales = regs.docs.map((d) => ({ id: d.id, ...d.data() }));
+    await window.exportarEventoPDF(null);
+  } catch (err) {
+    console.error("Error generando PDF:", err);
+    alert(`Error al generar el PDF:\n${err.message}`);
+  }
 };
 
 /* ══════════════════════════════════════════

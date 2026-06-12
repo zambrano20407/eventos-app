@@ -231,14 +231,24 @@
                 id="regSub"
               ></div>
             </div>
-            <button
-              class="btn-verde"
-              onclick="window.exportarEvento()"
-              id="btnExportarEv"
-              style="display: none"
-            >
-              📥 Exportar este evento
-            </button>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap">
+              <button
+                class="btn-verde"
+                onclick="window.exportarEvento()"
+                id="btnExportarEv"
+                style="display: none"
+              >
+                📥 Exportar este evento
+              </button>
+              <button
+                class="btn-pdf"
+                onclick="window.exportarEventoPDF('btnExportarPdf')"
+                id="btnExportarPdf"
+                style="display: none"
+              >
+                📄 Exportar PDF
+              </button>
+            </div>
           </div>
           <div class="field">
             <label>Seleccionar evento</label>
@@ -367,9 +377,14 @@
                   </select>
                 </div>
               </div>
-              <button class="btn-verde" onclick="window.exportarSeleccionado()">
-                📥 Descargar evento seleccionado
-              </button>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                <button class="btn-verde" onclick="window.exportarSeleccionado()">
+                  📥 Descargar Excel
+                </button>
+                <button class="btn-pdf" onclick="window.exportarSeleccionadoPDF()">
+                  📄 Descargar PDF
+                </button>
+              </div>
             </div>
           </div>
         </div>
