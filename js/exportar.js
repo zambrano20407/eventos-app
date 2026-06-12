@@ -18,14 +18,26 @@ async function cargarExcelJS() {
   });
 }
 
-/* ── Llena UNA hoja con el encabezado, logo y hasta 25 registros ── */
-function llenarHoja(wb, ws, evento, registros, logoBase64) {
-  // ── Insertar logo de la Registraduría en B2:C5 ──
-  if (logoBase64) {
+/* ── Estilo institucional de las celdas de datos ──
+   Arial 22, centrado y con ajuste de texto, igual que
+   los ajustes que se hacian a mano despues de descargar */
+const FUENTE_DATOS = { name: "Arial", size: 22 };
+const CENTRADO = {
+  horizontal: "center",
+  vertical: "middle",
+  wrapText: true,
+};
+
+/* ── Llena UNA hoja con el encabezado, logo y hasta 25 registros ──
+   El logo solo se agrega en hojas clonadas: la primera hoja ya lo
+   trae embebido en la plantilla (agregarlo de nuevo lo duplicaba) ── */
+function llenarHoja(wb, ws, evento, registros, logoBase64, esClon) {
+  if (esClon && logoBase64) {
     const logoId = wb.addImage({ base64: logoBase64, extension: "jpeg" });
+    // 5.32 cm x 1.32 cm ≈ 201 x 50 px (96 dpi), igual al ajuste manual
     ws.addImage(logoId, {
-      tl:  { col: 1, row: 1 },       // B2 (col 1, row 1 en índice 0)
-      br:  { col: 3, row: 5 },       // hasta C5
+      tl:  { col: 1, row: 1 },
+      ext: { width: 201, height: 50 },
       editAs: "oneCell",
     });
   }
@@ -65,7 +77,16 @@ function llenarHoja(wb, ws, evento, registros, logoBase64) {
     ws.getCell(fila, 12).value = nivel === "tecnico"      ? "X" : "";
     ws.getCell(fila, 13).value = nivel === "asistencial"  ? "X" : "";
 
-    // ── Insertar firma como imagen (igual que Python, columna O) ──
+    // Aplicar Arial 22 centrado con ajuste de texto a nombre,
+    // dependencia, sexo y las X del nivel del cargo
+    [5, 7, 8, 9, 10, 11, 12, 13].forEach((col) => {
+      const celda = ws.getCell(fila, col);
+      celda.font = FUENTE_DATOS;
+      celda.alignment = CENTRADO;
+    });
+
+    // ── Insertar firma dentro de su celda (columna O) ──
+    // (la linea de firma responsable se asegura al final de la hoja)
     const firma = reg.firma || "";
     if (firma && firma.includes(",")) {
       try {
@@ -73,9 +94,11 @@ function llenarHoja(wb, ws, evento, registros, logoBase64) {
           base64:    firma.split(",")[1],
           extension: "png",
         });
+        // 8.71 cm x 3.18 cm ≈ 329 x 120 px (96 dpi), centrada en la celda O
         ws.addImage(imgId, {
-          tl:  { col: 14,  row: fila - 1 + 0.05 },
-          ext: { width: 200, height: 50 },
+          tl:  { col: 14.08, row: fila - 1 + 0.06 },
+          ext: { width: 329, height: 120 },
+          editAs: "oneCell",
         });
         conFirma++;
       } catch (e) {
@@ -84,28 +107,50 @@ function llenarHoja(wb, ws, evento, registros, logoBase64) {
     }
   }
 
+  // ── Raya de "FIRMA RESPONSABLE DEL MACROPROCESO" ──
+  // En la plantilla esa raya es una linea dibujada (conector), y
+  // ExcelJS la elimina al guardar. La reponemos como una imagen
+  // de linea negra en la misma posicion del conector original.
+  const rayaId = wb.addImage({ base64: imagenRaya(), extension: "png" });
+  ws.addImage(rayaId, {
+    tl: { col: 3.05, row: 39.5 },
+    br: { col: 13.16, row: 39.515 },
+    editAs: "oneCell",
+  });
+
+  // Texto de respaldo por si una hoja clonada lo pierde
+  const celdaFirmaResp = ws.getCell(39, 2);
+  if (!celdaFirmaResp.value) {
+    celdaFirmaResp.value =
+      "FIRMA RESPONSABLE DEL MACROPROCESO / REGISTRADORES DISTRITALES / DELEGADOS DEPARTAMENTALES";
+    celdaFirmaResp.font = { name: "Arial", size: 25, bold: true };
+    celdaFirmaResp.alignment = { horizontal: "center", wrapText: true };
+  }
+
   return conFirma;
+}
+
+/* ── Genera una imagen PNG de una linea negra (la raya) ── */
+let _rayaCache = null;
+function imagenRaya() {
+  if (_rayaCache) return _rayaCache;
+  const canvas = document.createElement("canvas");
+  canvas.width = 1200;
+  canvas.height = 4;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  _rayaCache = canvas.toDataURL("image/png").split(",")[1];
+  return _rayaCache;
 }
 
 export async function exportarPTFT38(evento, registros) {
   await cargarExcelJS();
 
   // ── Cargar plantilla limpia desde hosting ──
-  const resp = await fetch("/formato_ptft38.xlsx");
+  const resp = await fetch("/PTFT38.xlsx");
   if (!resp.ok) throw new Error("No se pudo cargar la plantilla Excel.");
   const templateBuffer = await resp.arrayBuffer();
-
-  // ── Cargar logo una sola vez ──
-  let logoBase64 = null;
-  try {
-    const logoResp = await fetch("/img/LogoFormato.jpg");
-    const logoBuffer = await logoResp.arrayBuffer();
-    logoBase64 = btoa(
-      new Uint8Array(logoBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
-    );
-  } catch (e) {
-    console.warn("Logo no cargado:", e.message);
-  }
 
   // ── Partir los registros en grupos de 25 (uno por hoja) ──
   const grupos = [];
@@ -113,6 +158,24 @@ export async function exportarPTFT38(evento, registros) {
     grupos.push(registros.slice(i, i + REGISTROS_POR_HOJA));
   }
   if (grupos.length === 0) grupos.push([]);
+
+  // ── Cargar logo solo si habra hojas clonadas (la primera
+  //    ya lo trae embebido en la plantilla) ──
+  let logoBase64 = null;
+  if (grupos.length > 1) {
+    try {
+      const logoResp = await fetch("/img/LogoFormato.jpg");
+      const logoBuffer = await logoResp.arrayBuffer();
+      logoBase64 = btoa(
+        new Uint8Array(logoBuffer).reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          ""
+        )
+      );
+    } catch (e) {
+      console.warn("Logo no cargado:", e.message);
+    }
+  }
 
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.load(templateBuffer);
@@ -135,7 +198,7 @@ export async function exportarPTFT38(evento, registros) {
       });
       ws.name = `${nombreBase} (${g + 1})`;
     }
-    conFirma += llenarHoja(wb, ws, evento, grupos[g], logoBase64);
+    conFirma += llenarHoja(wb, ws, evento, grupos[g], logoBase64, g > 0);
   }
 
   // ── Descargar ──

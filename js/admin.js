@@ -21,9 +21,28 @@ onAuthStateChanged(auth, (user) => {
   if (!user) {
     window.location.replace("/vistas/login.html");
   } else {
-    const badge = document.querySelector(".admin-badge");
-    if (badge) badge.title = user.email;
+    // Nombre e iniciales fijos del administrador (definidos aquí);
+    // el correo sí se toma de la sesión de Firebase
+    const NOMBRE_ADMIN = "Oscar Zambrano";
+    const set = (id, txt) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = txt;
+    };
+    set("userName", NOMBRE_ADMIN);
+    set("userFullName", NOMBRE_ADMIN);
+    set("userEmail", user.email || "");
   }
+});
+
+// Menú de usuario: abrir/cerrar al hacer clic
+window.toggleUserMenu = function (e) {
+  e.stopPropagation();
+  document.getElementById("userMenu").classList.toggle("open");
+};
+
+// Cerrar el menú si se hace clic en cualquier otra parte de la página
+document.addEventListener("click", () => {
+  document.getElementById("userMenu")?.classList.remove("open");
 });
 
 // Cerrar sesión
@@ -54,7 +73,7 @@ console.log("admin.js conectado con Firebase");
 const COL_EVENTOS = "eventos";
 const COL_REGS = (evId) => `eventos/${evId}/registros`;
 
-const TEMPLATE_URL = "./formato_ptft38.xlsx";
+const TEMPLATE_URL = "/PTFT38.xlsx";
 const URL_ASISTENCIA = "/vistas/asistencia.html";
 
 // ── Detectar si estamos en el servidor local Python ──────────

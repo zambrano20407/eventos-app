@@ -21,8 +21,47 @@
         >
         <div class="top-bar-right">
           <span>Panel de Administración</span>
-          <span class="admin-badge">Admin</span>
-          <button class="btn-logout" onclick="window.cerrarSesion()">⎋ Salir</button>
+          <div class="user-menu" id="userMenu">
+            <button class="user-chip" onclick="window.toggleUserMenu(event)">
+              <span class="user-avatar" id="userAvatar">OZ</span>
+              <span class="user-name" id="userName">Oscar Zambrano</span>
+              <svg
+                class="user-caret"
+                width="10"
+                height="10"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+            <div class="user-dropdown" id="userDropdown">
+              <div class="user-dropdown-info">
+                <div class="user-dropdown-name" id="userFullName">—</div>
+                <div class="user-dropdown-email" id="userEmail">—</div>
+              </div>
+              <button
+                class="user-dropdown-item"
+                onclick="window.cerrarSesion()"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                Cerrar sesión
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -35,9 +74,7 @@
         </div>
         <div class="header-text-group">
           <div class="org-name">Registraduría Nacional del Estado Civil</div>
-          <div class="header-titulo">
-            Panel Administrativo <span>PTFT38</span>
-          </div>
+          <div class="header-titulo">Panel Administrativo</div>
           <div class="header-subtitulo">
             Permanencia del Talento Humano · Delegación Departamental Caquetá
           </div>
@@ -359,14 +396,18 @@
         <div class="qr-container" id="qrContainer"></div>
         <div class="qr-link" id="qrLink"></div>
         <p class="qr-hint">
-          Proyecte este código o imprímalo. Los participantes lo escanean con
-          la cámara de su celular y abre el formulario de asistencia.
+          Proyecte este código o imprímalo. Los participantes lo escanean con la
+          cámara de su celular y abre el formulario de asistencia.
         </p>
         <div class="qr-btns">
           <button class="btn-primary" onclick="window.descargarQR()">
             ⬇ Descargar PNG
           </button>
-          <button class="modal-close" style="margin-top: 0" onclick="window.cerrarModalQR()">
+          <button
+            class="modal-close"
+            style="margin-top: 0"
+            onclick="window.cerrarModalQR()"
+          >
             Cerrar
           </button>
         </div>

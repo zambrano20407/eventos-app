@@ -23,7 +23,13 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import openpyxl
 from openpyxl.drawing.image import Image as XLImage
+from openpyxl.styles import Font, Alignment
 from PIL import Image as PILImage
+
+# Estilo institucional de las celdas de datos (Arial 22, centrado,
+# con ajuste de texto) — los ajustes que se hacian a mano
+FUENTE_DATOS  = Font(name='Arial', size=22)
+CENTRADO      = Alignment(horizontal='center', vertical='center', wrap_text=True)
 
 # ══════════════════════════════════════════════════════════════
 #  RUTAS — servidor.py esta en /eventos-app/Python/
@@ -33,7 +39,7 @@ PYTHON_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR   = os.path.dirname(PYTHON_DIR)
 
 RUTA_CREDENCIALES = os.path.join(PYTHON_DIR, 'serviceAccountKey.json')
-RUTA_TEMPLATE     = os.path.join(PYTHON_DIR, 'Formato_PTFT38.xlsx')
+RUTA_TEMPLATE     = os.path.join(BASE_DIR, 'PTFT38.xlsx')
 CARPETA_REPORTES  = os.path.join(PYTHON_DIR, 'reportes')
 PUERTO            = 8000
 
@@ -58,7 +64,8 @@ def insertar_firma(ws, firma_b64, fila):
         fondo = PILImage.new('RGBA', pil_img.size, (255,255,255,255))
         fondo.paste(pil_img, mask=pil_img.split()[3])
         pil_img = fondo.convert('RGB')
-        pil_img.thumbnail((200, 55), PILImage.LANCZOS)
+        # 8.71 cm x 3.18 cm ≈ 329 x 120 px (96 dpi)
+        pil_img.thumbnail((329, 120), PILImage.LANCZOS)
         out_buf = io.BytesIO()
         pil_img.save(out_buf, format='PNG')
         out_buf.seek(0)
@@ -107,6 +114,11 @@ def llenar_hoja(ws, evento, registros):
         ws.cell(row=fila, column=11).value = 'X' if nivel == 'profesional' else ''
         ws.cell(row=fila, column=12).value = 'X' if nivel == 'tecnico'     else ''
         ws.cell(row=fila, column=13).value = 'X' if nivel == 'asistencial' else ''
+        # Arial 22 centrado en nombre, dependencia, sexo y X de nivel
+        for col in (5, 7, 8, 9, 10, 11, 12, 13):
+            celda = ws.cell(row=fila, column=col)
+            celda.font = FUENTE_DATOS
+            celda.alignment = CENTRADO
         if insertar_firma(ws, reg.get('firma',''), fila):
             con_firma += 1
     return con_firma
@@ -144,7 +156,8 @@ def generar_excel(evento, registros):
             ruta_logo = os.path.join(BASE_DIR, 'img', 'LogoFormato.jpg')
             if os.path.exists(ruta_logo):
                 logo = XLImage(ruta_logo)
-                logo.width, logo.height = 170, 75
+                # 5.32 cm x 1.32 cm ≈ 201 x 50 px (96 dpi)
+                logo.width, logo.height = 201, 50
                 logo.anchor = 'B2'
                 hoja.add_image(logo)
         con_firma += llenar_hoja(hoja, evento, grupo)
