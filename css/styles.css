@@ -161,7 +161,7 @@ body > * {
 .header-main {
   max-width: 960px;
   margin: 0 auto;
-  padding: 18px 28px 0;
+  padding: 10px 28px;
   display: flex;
   align-items: center;
   gap: 20px;

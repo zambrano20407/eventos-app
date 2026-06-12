@@ -17,3 +17,6 @@ Thumbs.db
 
 # Firebase CLI
 .firebase/
+
+# Python cache
+__pycache__/
