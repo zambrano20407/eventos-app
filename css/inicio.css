@@ -1,0 +1,140 @@
+/* ============================================================
+   inicio.css — Escritorio de módulos del Panel de Gestión
+   ============================================================ */
+
+.inicio-wrap {
+  width: 100%;
+  max-width: 960px;
+  flex: 1;
+  padding: 8px 16px 32px;
+  animation: fadeUp 0.4s ease both;
+}
+
+.inicio-saludo {
+  font-family: "Montserrat", sans-serif;
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--azul-nav, #0b2252);
+  margin-top: 18px;
+}
+.inicio-saludo::after {
+  content: "";
+  display: block;
+  width: 56px;
+  height: 4px;
+  border-radius: 3px;
+  background: var(--amarillo, #f5c400);
+  margin-top: 6px;
+}
+.inicio-sub {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--azul-nav, #0b2252);
+  opacity: 0.75;
+  margin: 10px 0 22px;
+}
+
+.modulos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 18px;
+}
+
+.modulo-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: linear-gradient(160deg, #0d2c6e 0%, #0b2252 100%);
+  border-radius: 12px;
+  padding: 24px 22px 20px;
+  text-decoration: none;
+  box-shadow: 0 8px 30px rgba(11, 34, 82, 0.3);
+  border-top: 4px solid var(--amarillo, #f5c400);
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+.modulo-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 44px rgba(11, 34, 82, 0.42);
+}
+.modulo-card.deshabilitado {
+  background: linear-gradient(160deg, #4a5a7d 0%, #3d4a66 100%);
+  opacity: 0.9;
+  cursor: default;
+}
+.modulo-card.deshabilitado:hover {
+  transform: none;
+  box-shadow: 0 8px 30px rgba(11, 34, 82, 0.3);
+}
+
+.modulo-icono {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+}
+.modulo-nombre {
+  font-family: "Montserrat", sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+}
+.modulo-desc {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.75);
+  flex: 1;
+}
+.modulo-stats {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.modulo-stat {
+  font-family: "Montserrat", sans-serif;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+.modulo-stat.alerta {
+  background: var(--amarillo, #f5c400);
+  border-color: var(--amarillo, #f5c400);
+  color: var(--azul-nav, #0b2252);
+}
+.modulo-stat.proximamente {
+  background: var(--amarillo, #f5c400);
+  border-color: var(--amarillo, #f5c400);
+  color: var(--azul-nav, #0b2252);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.modulo-entrar {
+  font-family: "Montserrat", sans-serif;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--amarillo, #f5c400);
+  margin-top: 4px;
+  transition: transform 0.15s;
+}
+.modulo-card:hover .modulo-entrar {
+  transform: translateX(4px);
+}
+
+@media (max-width: 620px) {
+  .modulos-grid {
+    grid-template-columns: 1fr;
+  }
+  .inicio-saludo {
+    font-size: 20px;
+  }
+}
