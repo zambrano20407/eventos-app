@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="/img/icono.png" />
+    <title>Autorización de Solicitud | Registraduría Caquetá</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/css/asistencia.css" />
+    <link rel="stylesheet" href="/css/formularios.css" />
+    <link rel="stylesheet" href="/css/autorizar.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- BARRA SUPERIOR -->
+    <div class="top-bar" style="width: 100%">
+      <div class="top-bar-inner">
+        <span class="top-bar-left">República de Colombia · Organización Electoral</span>
+        <div class="top-bar-right">
+          <span>Autorización de Solicitud</span>
+          <span class="top-bar-badge admin">Autoriza</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- HEADER -->
+    <div class="header" style="width: 100%">
+      <div class="header-main">
+        <div class="logo-wrap"><img src="/img/Logo 2.jpg" alt="Registraduría" /></div>
+        <div class="header-text-group">
+          <div class="org-name">Registraduría Nacional del Estado Civil</div>
+          <div class="header-titulo">Autorización de <span>Usuarios</span></div>
+          <div class="header-subtitulo">
+            Delegación Departamental Caquetá · Revisión y firma del autorizador
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARGANDO -->
+    <div id="cargando" style="width: 100%; max-width: 640px">
+      <div class="card" style="text-align: center; padding: 52px 28px">
+        <p style="font-size: 13px; color: var(--gris-txt)">Cargando solicitud…</p>
+      </div>
+    </div>
+
+    <!-- ENLACE NO VÁLIDO -->
+    <div id="noValido" style="display: none; width: 100%; max-width: 640px">
+      <div class="card" style="text-align: center; padding: 52px 28px">
+        <div style="font-size: 48px; margin-bottom: 14px">🔒</div>
+        <h2 class="sin-ev-titulo">Enlace no válido</h2>
+        <p class="sin-ev-sub">
+          Este enlace no corresponde a ninguna solicitud vigente.<br />
+          Comuníquese con la <strong>Delegación Departamental Caquetá</strong>.
+        </p>
+      </div>
+    </div>
+
+    <!-- SOLICITUD -->
+    <div class="card" id="cardSolicitud" style="display: none">
+      <div class="card-body" id="cuerpo">
+        <div class="ev-banner">
+          <div class="ev-label">Solicitud de cuentas de usuario</div>
+          <div class="ev-nombre" id="solNombre">—</div>
+          <div class="ev-meta" id="solMeta">—</div>
+        </div>
+
+        <div class="modulo-titulo">Datos del funcionario</div>
+        <div class="resumen" id="resumenFuncionario"></div>
+
+        <div class="modulo-titulo">Sistemas solicitados</div>
+        <div id="resumenSistemas"></div>
+
+        <div class="modulo-titulo">Justificación</div>
+        <div class="justif-box" id="resumenJustificacion"></div>
+
+        <div class="modulo-titulo">Firma del funcionario</div>
+        <div class="firma-box">
+          <img id="firmaFuncionario" alt="Firma del funcionario" />
+        </div>
+
+        <hr class="sep" />
+
+        <!-- DECISIÓN -->
+        <div class="modulo-titulo">Su decisión</div>
+        <div class="field">
+          <div class="pills">
+            <div class="pill">
+              <input type="radio" name="decision" id="dec_aut" value="Autorizada" checked />
+              <label for="dec_aut">✔ Autorizar</label>
+            </div>
+            <div class="pill">
+              <input type="radio" name="decision" id="dec_rec" value="Rechazada" />
+              <label for="dec_rec">✕ Rechazar</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="field" id="campoMotivo" style="display: none">
+          <label>Motivo del rechazo <span class="req">*</span></label>
+          <textarea id="motivo" rows="3" placeholder="Explique brevemente por qué no se autoriza."></textarea>
+        </div>
+
+        <div id="bloqueFirma">
+          <div class="field">
+            <div class="sig-header">
+              <label>✍️ &nbsp;Su firma <span class="req">*</span></label>
+              <button class="btn-clear" onclick="clearSig()">Borrar firma</button>
+            </div>
+            <div class="canvas-wrap" id="canvasWrap">
+              <canvas id="sigCanvas" width="540" height="130"></canvas>
+              <div class="canvas-hint" id="canvasHint">
+                <span>Dibuje su firma aquí con el ratón o el dedo</span>
+              </div>
+            </div>
+          </div>
+          <div class="nota-firma">
+            ℹ️ Al firmar, su firma se incorpora al formato oficial y ya no será
+            necesario imprimirlo para firmarlo a mano.
+          </div>
+        </div>
+
+        <button class="btn-submit" id="btnEnviar" onclick="enviarDecision()">
+          <span class="btn-txt">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Registrar decisión
+          </span>
+          <div class="spinner"></div>
+        </button>
+      </div>
+
+      <!-- YA RESUELTA -->
+      <div class="success-panel" id="panelResuelta">
+        <div class="check-circle" id="iconoResuelta">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </div>
+        <h2 class="success-title" id="tituloResuelta">¡Solicitud autorizada!</h2>
+        <p class="success-name" id="nombreResuelta"></p>
+        <p class="success-sub" id="detalleResuelta"></p>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="page-footer">
+      <div class="footer-teal-bar"></div>
+      <div class="footer-body">
+        <img class="footer-logo" src="/img/Logo 2.jpg" alt="Registraduría" />
+        <div class="footer-divider"></div>
+        <div class="footer-info">
+          <div class="footer-org">Registraduría Nacional del Estado Civil</div>
+          <div class="footer-sub">
+            Delegación Departamental Caquetá<br />
+            <span class="footer-dir">
+              <img src="/img/ico-footer-location.svg" alt="Ubicación" class="footer-dir-ico" />
+              Calle 15 N°. 15-20 Piso 2, Florencia – Caquetá &nbsp;CP: 180001
+            </span>
+          </div>
+        </div>
+        <div class="footer-right-block">
+          <div class="footer-ptft">USUARIOS</div>
+          <div class="footer-ver">RNEC · 2026</div>
+          <div class="e26-dots">
+            <div class="e26-dot" style="background: var(--e26-amarillo)"></div>
+            <div class="e26-dot" style="background: var(--e26-azul)"></div>
+            <div class="e26-dot" style="background: var(--e26-rojo)"></div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">Copyright 2026 © – Registraduría Nacional del Estado Civil.</div>
+    </div>
+
+    <script type="module" src="/js/autorizar.js"></script>
+  </body>
+</html>
