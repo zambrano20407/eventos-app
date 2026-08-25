@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="/img/icono.png" />
+    <title>Gestión de Usuarios | Registraduría Caquetá</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/css/admin.css" />
+  </head>
+  <body>
+    <!-- BARRA SUPERIOR -->
+    <div class="top-bar" style="width: 100%">
+      <div class="top-bar-inner">
+        <span class="top-bar-left">República de Colombia · Organización Electoral</span>
+        <div class="top-bar-right">
+          <a class="btn-inicio" href="/vistas/inicio.html">⌂ Inicio</a>
+          <span>Gestión de Usuarios</span>
+          <div class="user-menu" id="userMenu">
+            <button class="user-chip" onclick="window.toggleUserMenu(event)">
+              <span class="user-avatar" id="userAvatar">OZ</span>
+              <span class="user-name" id="userName">Oscar Zambrano</span>
+              <svg class="user-caret" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+            <div class="user-dropdown" id="userDropdown">
+              <div class="user-dropdown-info">
+                <div class="user-dropdown-name" id="userFullName">Oscar Zambrano</div>
+                <div class="user-dropdown-email" id="userEmail">—</div>
+              </div>
+              <button class="user-dropdown-item" onclick="window.cerrarSesion()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                Cerrar sesión
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HEADER -->
+    <div class="header" style="width: 100%">
+      <div class="header-main">
+        <div class="logo-wrap">
+          <img src="/img/Logo 2.jpg" alt="Registraduría" />
+        </div>
+        <div class="header-text-group">
+          <div class="org-name">Registraduría Nacional del Estado Civil</div>
+          <div class="header-titulo">Gestión de <span>Usuarios</span></div>
+          <div class="header-subtitulo">
+            Correo · ANI · Web Service · GED · SIRC · HLED · Delegación Departamental Caquetá
+          </div>
+        </div>
+        <div class="ptft-badge">
+          <span class="ptft-code">USUARIOS</span>
+          <span class="ptft-ver">RNEC</span>
+        </div>
+      </div>
+      <div class="nav-wrap">
+        <div class="nav-tabs">
+          <button class="nav-tab active" id="tab-gestion">
+            👥 Solicitudes de Usuarios
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD -->
+    <div class="card">
+      <!-- ══ PANEL GESTIÓN DE USUARIOS ══ -->
+      <div id="panelGestion">
+        <div class="card-body">
+          <div class="section-title">Solicitudes de usuarios de sistemas</div>
+          <div class="warn-box">
+            👥
+            <span
+              >Comparta este enlace con los funcionarios para que soliciten sus
+              cuentas de <strong>Correo, ANI, Web Service, GED, SIRC y HLED</strong>.
+              Haga clic en la insignia de cada sistema para cambiar su estado
+              (🟡 Pendiente → 🟢 Activo → 🔴 Inactivo) y use ✏️ para anotar el
+              usuario asignado.</span
+            >
+          </div>
+          <div class="link-box">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--cian)" stroke-width="2">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            </svg>
+            <input type="text" id="lnkUsuarios" readonly onclick="this.select()" />
+            <button class="btn-copy" id="copyUsuarios" onclick="window.copiarLinkUsuarios()">Copiar</button>
+          </div>
+          <div class="field">
+            <label>Filtrar por sistema</label>
+            <div class="select-wrap">
+              <select id="usuFiltro" onchange="window.filtrarUsuarios()">
+                <option value="">— Todos los sistemas —</option>
+                <option value="correo">Correo Institucional</option>
+                <option value="ani">ANI</option>
+                <option value="webservice">Web Service</option>
+                <option value="gedid">GED ID</option>
+                <option value="gedrc">GED RC</option>
+                <option value="sirc">SIRC</option>
+                <option value="hled">HLED</option>
+              </select>
+            </div>
+          </div>
+          <div class="reg-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Funcionario</th>
+                  <th>Cédula</th>
+                  <th>Oficina</th>
+                  <th>Vigencia</th>
+                  <th>Sistemas / Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="usuTabla">
+                <tr><td colspan="7" class="sin-datos">Cargando solicitudes…</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="font-size: 11.5px; color: var(--gris-txt); text-align: right; margin-top: 4px" id="usuConteo"></div>
+        </div>
+      </div>
+
+    </div>
+    <!-- /card -->
+
+    <!-- FOOTER -->
+    <div class="page-footer">
+      <div class="footer-teal-bar"></div>
+      <div class="footer-body">
+        <img class="footer-logo" src="/img/Logo 2.jpg" alt="Registraduría" />
+        <div class="footer-divider"></div>
+        <div class="footer-info">
+          <div class="footer-org">Registraduría Nacional del Estado Civil</div>
+          <div class="footer-sub">
+            Delegación Departamental Caquetá<br />
+            <span class="footer-dir">
+              <img src="/img/ico-footer-location.svg" alt="Ubicación" class="footer-dir-ico" />
+              Calle 15 N°. 15-20 Piso 2, Florencia – Caquetá &nbsp;CP: 180001
+            </span>
+          </div>
+        </div>
+        <div class="footer-right-block">
+          <div class="footer-ptft">USUARIOS</div>
+          <div class="footer-ver">RNEC · 2026</div>
+          <div class="e26-dots">
+            <div class="e26-dot" style="background: var(--e26-amarillo)"></div>
+            <div class="e26-dot" style="background: var(--e26-azul)"></div>
+            <div class="e26-dot" style="background: var(--e26-rojo)"></div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">Copyright 2026 © – Registraduría Nacional del Estado Civil.</div>
+    </div>
+
+    <script type="module" src="/js/usuarios-admin.js"></script>
+  </body>
+</html>
