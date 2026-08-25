@@ -7,7 +7,7 @@ import {
 // Si ya hay sesión activa → ir directo al admin
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    window.location.replace("/vistas/admin.html");
+    window.location.replace("/vistas/inicio.html");
   }
 });
 
@@ -37,13 +37,23 @@ window.iniciarSesion = async function () {
 
   try {
     await signInWithEmailAndPassword(auth, email, pass);
-    window.location.replace("/vistas/admin.html");
+    window.location.replace("/vistas/inicio.html");
   } catch (err) {
-    let msg = "Credenciales incorrectas. Intente de nuevo.";
-    if (err.code === "auth/too-many-requests") {
-      msg = "Demasiados intentos fallidos. Intente más tarde.";
-    }
-    error.textContent = msg;
+    // Un solo mensaje para todo escondía fallos que no son de credenciales
+    // (dominio sin autorizar, red bloqueada) y hacía perder tiempo probando
+    // contraseñas que sí eran correctas.
+    console.error("Fallo al iniciar sesión:", err.code, err);
+    const MENSAJES = {
+      "auth/too-many-requests": "Demasiados intentos fallidos. Intente más tarde.",
+      "auth/network-request-failed":
+        "No hay conexión con el servidor de autenticación. Revise la red.",
+      "auth/unauthorized-domain":
+        "Este dominio no está autorizado en Firebase Authentication.",
+      "auth/invalid-email": "El correo no tiene un formato válido.",
+      "auth/user-disabled": "Esta cuenta está deshabilitada.",
+    };
+    error.textContent =
+      MENSAJES[err.code] || "Credenciales incorrectas. Intente de nuevo.";
     error.classList.add("show");
   } finally {
     btn.classList.remove("loading");
