@@ -20,7 +20,8 @@
           >República de Colombia · Organización Electoral</span
         >
         <div class="top-bar-right">
-          <span>Panel de Administración</span>
+          <a class="btn-inicio" href="/vistas/inicio.html">⌂ Inicio</a>
+          <span>Eventos y Asistencia</span>
           <div class="user-menu" id="userMenu">
             <button class="user-chip" onclick="window.toggleUserMenu(event)">
               <span class="user-avatar" id="userAvatar">OZ</span>
@@ -74,7 +75,7 @@
         </div>
         <div class="header-text-group">
           <div class="org-name">Registraduría Nacional del Estado Civil</div>
-          <div class="header-titulo">Panel Administrativo</div>
+          <div class="header-titulo">Eventos y <span>Asistencia</span></div>
           <div class="header-subtitulo">
             Permanencia del Talento Humano · Delegación Departamental Caquetá
           </div>
@@ -295,21 +296,81 @@
 
       <div id="panelEstadisticas" style="display: none">
         <div class="card-body">
-          <div class="section-title">Resumen general</div>
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-num" id="statEventos">—</div>
-              <div class="stat-label">Eventos creados</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-num" id="statTotal">—</div>
-              <div class="stat-label">Total registros</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-num" id="statPromedio">—</div>
-              <div class="stat-label">Promedio por evento</div>
+          <!-- Filtro: todos los eventos o uno en particular -->
+          <div class="field">
+            <label>Ver estadísticas de</label>
+            <div class="select-wrap">
+              <select id="statFiltroEvento" onchange="window.filtrarEstadisticas()">
+                <option value="">— Todos los eventos —</option>
+              </select>
             </div>
           </div>
+
+          <div class="section-title">Resumen general</div>
+          <div class="kpi-grid">
+            <div class="kpi kpi-azul">
+              <div class="kpi-ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <rect x="3" y="4" width="18" height="17" rx="2" />
+                  <line x1="3" y1="9" x2="21" y2="9" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="16" y1="2" x2="16" y2="6" />
+                </svg>
+              </div>
+              <div class="kpi-txt"><b id="statEventos">—</b><span>Eventos</span></div>
+            </div>
+            <div class="kpi kpi-teal">
+              <div class="kpi-ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              </div>
+              <div class="kpi-txt"><b id="statTotal">—</b><span>Asistentes</span></div>
+            </div>
+            <div class="kpi kpi-ambar">
+              <div class="kpi-ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+              </div>
+              <div class="kpi-txt"><b id="statPromedio">—</b><span>Promedio por evento</span></div>
+            </div>
+            <div class="kpi kpi-verde">
+              <div class="kpi-ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
+                </svg>
+              </div>
+              <div class="kpi-txt"><b id="statMunicipios">—</b><span>Municipios cubiertos</span></div>
+            </div>
+          </div>
+
+          <!-- Gráficos -->
+          <div class="graf-grid">
+            <div class="graf-panel">
+              <h4 class="graf-titulo">Asistentes por dependencia</h4>
+              <div id="grafDependencia" class="graf-barras"></div>
+            </div>
+            <div class="graf-panel">
+              <h4 class="graf-titulo">Nivel del cargo</h4>
+              <div id="grafNivel" class="graf-dona"></div>
+            </div>
+            <div class="graf-panel">
+              <h4 class="graf-titulo">Participación por sexo</h4>
+              <div id="grafSexo" class="graf-barras"></div>
+            </div>
+            <div class="graf-panel" id="panelGrafEvento">
+              <h4 class="graf-titulo">Asistentes por evento</h4>
+              <div id="grafEvento" class="graf-barras"></div>
+            </div>
+          </div>
+
+          <!-- Cobertura territorial -->
+          <div class="graf-panel" id="panelCobertura">
+            <h4 class="graf-titulo">Cobertura en el departamento</h4>
+            <p class="graf-nota" id="coberturaResumen">—</p>
+            <div id="grafCobertura" class="cobertura-chips"></div>
+          </div>
+
           <div class="section-title">Por dependencia</div>
           <div class="reg-table-wrap">
             <table>

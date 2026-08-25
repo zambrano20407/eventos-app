@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Muestra del tablero de estadísticas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="stylesheet" href="../css/admin.css" />
+    <style>
+      /* Solo para la muestra: encuadre sencillo, sin la barra del panel */
+      body { background: #eef1f6; }
+      .demo-wrap { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+      .demo-aviso {
+        font-size: 12.5px; color: #92400e; background: #fffbeb;
+        border: 1.5px solid #fcd34d; border-radius: 6px;
+        padding: 10px 14px; margin-bottom: 16px;
+      }
+      .demo-card { background: #fff; border-radius: 10px; padding: 20px 22px; }
+    </style>
+  </head>
+  <body>
+    <div class="demo-wrap">
+      <p class="demo-aviso">
+        <strong>Página de muestra.</strong> Los datos son inventados, solo sirven para
+        revisar el diseño del tablero. No consulta Firebase ni pide inicio de sesión.
+      </p>
+
+      <div class="demo-card">
+        <div class="field">
+          <label>Ver estadísticas de</label>
+          <div class="select-wrap">
+            <select id="statFiltroEvento"></select>
+          </div>
+        </div>
+
+        <div class="section-title">Resumen general</div>
+        <div class="kpi-grid">
+          <div class="kpi kpi-azul">
+            <div class="kpi-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <rect x="3" y="4" width="18" height="17" rx="2" />
+                <line x1="3" y1="9" x2="21" y2="9" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="16" y1="2" x2="16" y2="6" />
+              </svg>
+            </div>
+            <div class="kpi-txt"><b id="statEventos">—</b><span>Eventos</span></div>
+          </div>
+          <div class="kpi kpi-teal">
+            <div class="kpi-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            </div>
+            <div class="kpi-txt"><b id="statTotal">—</b><span>Asistentes</span></div>
+          </div>
+          <div class="kpi kpi-ambar">
+            <div class="kpi-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
+              </svg>
+            </div>
+            <div class="kpi-txt"><b id="statPromedio">—</b><span>Promedio por evento</span></div>
+          </div>
+          <div class="kpi kpi-verde">
+            <div class="kpi-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
+              </svg>
+            </div>
+            <div class="kpi-txt"><b id="statMunicipios">—</b><span>Municipios cubiertos</span></div>
+          </div>
+        </div>
+
+        <div class="graf-grid">
+          <div class="graf-panel">
+            <h4 class="graf-titulo">Asistentes por dependencia</h4>
+            <div id="grafDependencia" class="graf-barras"></div>
+          </div>
+          <div class="graf-panel">
+            <h4 class="graf-titulo">Nivel del cargo</h4>
+            <div id="grafNivel" class="graf-dona"></div>
+          </div>
+          <div class="graf-panel">
+            <h4 class="graf-titulo">Participación por sexo</h4>
+            <div id="grafSexo" class="graf-barras"></div>
+          </div>
+          <div class="graf-panel" id="panelGrafEvento">
+            <h4 class="graf-titulo">Asistentes por evento</h4>
+            <div id="grafEvento" class="graf-barras"></div>
+          </div>
+        </div>
+
+        <div class="graf-panel" id="panelCobertura">
+          <h4 class="graf-titulo">Cobertura en el departamento</h4>
+          <p class="graf-nota" id="coberturaResumen">—</p>
+          <div id="grafCobertura" class="cobertura-chips"></div>
+        </div>
+
+        <div class="section-title">Detalle por dependencia</div>
+        <table class="tabla">
+          <thead><tr><th>Dependencia</th><th>Asistentes</th><th>%</th></tr></thead>
+          <tbody id="statDepTabla"></tbody>
+        </table>
+
+        <div class="section-title">Detalle por nivel del cargo</div>
+        <table class="tabla">
+          <thead><tr><th>Nivel</th><th>Asistentes</th><th>%</th></tr></thead>
+          <tbody id="statNivelTabla"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script type="module">
+      import { pintarTablero } from "../js/tablero.js";
+
+      const EVENTOS = [
+        { id: "e1", nombre: "Jornada de Identificación Solano", fecha: "2026-03-12" },
+        { id: "e2", nombre: "Capacitación SIRC Florencia", fecha: "2026-04-08" },
+        { id: "e3", nombre: "Socialización El Doncello", fecha: "2026-05-20" },
+      ];
+
+      // Datos inventados, repartidos para que se vean los cuatro gráficos
+      const CRUDOS = [
+        ["e1", "Registraduría Municipal de Solano", "Masculino", "Técnico", 9],
+        ["e1", "Registraduría Municipal de Solano", "Femenino", "Asistencial", 7],
+        ["e1", "Delegación Departamental Caquetá", "Femenino", "Profesional", 4],
+        ["e2", "Delegación Departamental Caquetá", "Masculino", "Profesional", 12],
+        ["e2", "Delegación Departamental Caquetá", "Femenino", "Técnico", 15],
+        ["e2", "Registraduría Municipal de Curillo", "Femenino", "Asistencial", 5],
+        ["e2", "Registraduría Municipal de Milán", "Masculino", "Técnico", 3],
+        ["e3", "Registraduría Municipal de El Doncello", "Femenino", "Directivo", 2],
+        ["e3", "Registraduría Municipal de El Doncello", "Masculino", "Asistencial", 8],
+        ["e3", "Registraduría Municipal de El Paujil", "Femenino", "Técnico", 6],
+      ];
+
+      const REGISTROS = [];
+      CRUDOS.forEach(([evId, dependencia, sexo, nivel, veces]) => {
+        const ev = EVENTOS.find((e) => e.id === evId);
+        for (let i = 0; i < veces; i++) {
+          REGISTROS.push({ eventoId: evId, eventoNombre: ev.nombre, dependencia, sexo, nivel });
+        }
+      });
+
+      const sel = document.getElementById("statFiltroEvento");
+      sel.innerHTML =
+        '<option value="">— Todos los eventos —</option>' +
+        EVENTOS.map((e) => `<option value="${e.id}">${e.nombre} · ${e.fecha}</option>`).join("");
+      sel.onchange = () => pintarTablero(EVENTOS, REGISTROS, sel.value);
+
+      pintarTablero(EVENTOS, REGISTROS, "");
+    </script>
+  </body>
+</html>

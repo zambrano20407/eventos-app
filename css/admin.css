@@ -451,6 +451,200 @@ tbody td {
   font-weight: 600;
 }
 
+/* ══ TABLERO DE ESTADÍSTICAS ══════════════════════════════════
+   Paleta verificada para daltonismo y contraste. El amarillo
+   institucional (#F5C400) no se usa en los graficos: sobre fondo
+   blanco tiene contraste 1.6:1 y no se distingue. Se sustituye
+   por un ambar oscuro que si cumple.                            */
+:root {
+  --gr-azul: #1455a4;
+  --gr-ambar: #c08a00;
+  --gr-teal: #009aad;
+  --gr-rojo: #c0392b;
+  --gr-verde: #00a064;
+  --gr-morado: #6b4fa8;
+}
+
+/* ── Tarjetas KPI con icono ── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.kpi {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1.5px solid var(--gris-bd);
+  border-left: 4px solid var(--gr-azul);
+  border-radius: 8px;
+}
+.kpi-ico {
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #eef4fb;
+  color: var(--gr-azul);
+}
+.kpi-ico svg {
+  width: 21px;
+  height: 21px;
+}
+.kpi-txt b {
+  display: block;
+  font-family: "Montserrat", sans-serif;
+  font-size: 25px;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--azul-nav);
+}
+.kpi-txt span {
+  font-size: 11px;
+  color: var(--gris-txt);
+  font-weight: 600;
+}
+.kpi-teal { border-left-color: var(--gr-teal); }
+.kpi-teal .kpi-ico { background: #e5f6f8; color: var(--gr-teal); }
+.kpi-ambar { border-left-color: var(--gr-ambar); }
+.kpi-ambar .kpi-ico { background: #fbf3e0; color: var(--gr-ambar); }
+.kpi-verde { border-left-color: var(--gr-verde); }
+.kpi-verde .kpi-ico { background: #e6f6ef; color: var(--gr-verde); }
+
+/* ── Paneles de gráficos ── */
+.graf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 18px;
+  margin-bottom: 18px;
+}
+.graf-panel {
+  border: 1.5px solid var(--gris-bd);
+  border-radius: 8px;
+  padding: 18px 20px;
+  background: #fff;
+}
+.graf-titulo {
+  font-family: "Montserrat", sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--gris-txt);
+  margin: 0 0 14px;
+}
+.graf-nota {
+  font-size: 12px;
+  color: var(--gris-txt);
+  margin: -6px 0 10px;
+}
+
+/* ── Barras horizontales ── */
+.graf-fila {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 11.5px;
+  color: var(--tinta);
+}
+/* La última fila no necesita margen: ya está el relleno del panel */
+.graf-fila:last-child {
+  margin-bottom: 0;
+}
+.graf-fila .etq {
+  width: 118px;
+  flex-shrink: 0;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.graf-fila .pista {
+  flex: 1;
+  height: 14px;
+  background: var(--gris-bg);
+  border-radius: 0 4px 4px 0;
+  overflow: hidden;
+}
+.graf-fila .barra {
+  /* Es un <span>: sin esto queda en línea, ignora el alto y el ancho
+     que le pone el script, y solo se vería la pista de fondo */
+  display: block;
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+  transition: width 0.5s ease;
+}
+.graf-fila .val {
+  width: 44px;
+  flex-shrink: 0;
+  font-weight: 700;
+  color: var(--azul-nav);
+  font-size: 11.5px;
+}
+.graf-vacio {
+  font-size: 12.5px;
+  color: var(--gris-txt);
+  text-align: center;
+  padding: 18px 0;
+}
+
+/* ── Dona con leyenda ── */
+.graf-dona {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+}
+.graf-dona svg {
+  flex-shrink: 0;
+}
+.dona-leyenda {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--tinta);
+}
+.dona-leyenda span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.dona-punto {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ── Cobertura por municipio ── */
+.cobertura-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.mun-chip {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1.5px solid var(--gris-bd);
+  background: var(--gris-bg);
+  color: var(--gris-txt);
+}
+.mun-chip.con {
+  background: #e6f6ef;
+  border-color: #a8d5c0;
+  color: #00714a;
+  font-weight: 600;
+}
+
 /* ══ EXPORTAR ══ */
 .export-card {
   border: 1.5px solid var(--gris-bd);
@@ -546,6 +740,26 @@ tbody td {
   font-size: 13.5px;
 }
 
+
+/* ══ BOTÓN INICIO (top-bar) ══ */
+.btn-inicio {
+  font-family: "Montserrat", sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  transition: all 0.18s;
+}
+.btn-inicio:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
 
 /* ══ MENÚ DE USUARIO (top-bar) ══ */
 /* La regla global `body > * { z-index: 1 }` hace que el header

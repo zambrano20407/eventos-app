@@ -1,4 +1,5 @@
 import { db, auth } from "./firebase-config.js";
+import { pintarTablero } from "./tablero.js";
 import {
   collection,
   addDoc,
@@ -593,43 +594,43 @@ window.exportarSeleccionadoPDF = async function () {
 /* ══════════════════════════════════════════
    ESTADÍSTICAS
 ══════════════════════════════════════════ */
+/* ══════════════════════════════════════════
+   TABLERO DE ESTADÍSTICAS (carga de datos)
+══════════════════════════════════════════ */
+
+// Los datos se traen una vez; el filtro solo recalcula sobre ellos
+let _statsEventos = [];
+let _statsRegistros = [];
+
+window.filtrarEstadisticas = function () {
+  pintarTablero(_statsEventos, _statsRegistros, document.getElementById("statFiltroEvento").value);
+};
+
 async function renderEstadisticas() {
-  const eventosSnap = await getDocs(collection(db, COL_EVENTOS));
-  let todos = [];
-  for (const ev of eventosSnap.docs) {
+  const eventosSnap = await getDocs(
+    query(collection(db, COL_EVENTOS), orderBy("creadoEn", "desc")),
+  );
+  _statsEventos = eventosSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  _statsRegistros = [];
+
+  for (const ev of _statsEventos) {
     const regs = await getDocs(collection(db, COL_REGS(ev.id)));
-    regs.docs.forEach((r) => todos.push(r.data()));
+    regs.docs.forEach((r) =>
+      _statsRegistros.push({ ...r.data(), eventoId: ev.id, eventoNombre: ev.nombre }),
+    );
   }
 
-  document.getElementById("statEventos").textContent = eventosSnap.size;
-  document.getElementById("statTotal").textContent = todos.length;
-  document.getElementById("statPromedio").textContent = eventosSnap.size
-    ? Math.round(todos.length / eventosSnap.size)
-    : 0;
+  // Llenar el filtro conservando la selección actual
+  const sel = document.getElementById("statFiltroEvento");
+  const previo = sel.value;
+  sel.innerHTML =
+    '<option value="">— Todos los eventos —</option>' +
+    _statsEventos
+      .map((e) => `<option value="${e.id}">${e.nombre} · ${e.fecha || ""}</option>`)
+      .join("");
+  sel.value = previo;
 
-  const tot = todos.length || 1;
-
-  const deps = {};
-  todos.forEach((r) => (deps[r.dependencia] = (deps[r.dependencia] || 0) + 1));
-  document.getElementById("statDepTabla").innerHTML =
-    Object.entries(deps)
-      .sort((a, b) => b[1] - a[1])
-      .map(
-        ([dep, n]) =>
-          `<tr><td>${dep}</td><td style="font-weight:600">${n}</td><td>${Math.round((n / tot) * 100)}%</td></tr>`,
-      )
-      .join("") || '<tr><td colspan="3" class="sin-datos">Sin datos.</td></tr>';
-
-  const niveles = {};
-  todos.forEach((r) => (niveles[r.nivel] = (niveles[r.nivel] || 0) + 1));
-  document.getElementById("statNivelTabla").innerHTML =
-    Object.entries(niveles)
-      .sort((a, b) => b[1] - a[1])
-      .map(
-        ([niv, n]) =>
-          `<tr><td><span class="nivel-badge">${niv}</span></td><td style="font-weight:600">${n}</td><td>${Math.round((n / tot) * 100)}%</td></tr>`,
-      )
-      .join("") || '<tr><td colspan="3" class="sin-datos">Sin datos.</td></tr>';
+  window.filtrarEstadisticas();
 }
 
 /* ══════════════════════════════════════════
