@@ -1,0 +1,239 @@
+/* ============================================================
+   usuarios.css — Formulario de solicitud de usuarios RNEC
+   Complementa formularios.css
+   ============================================================ */
+
+/* ══ ASISTENTE POR PASOS ══ */
+.pasos-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 0 2px;
+}
+.paso-dot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 74px;
+  cursor: pointer;
+  user-select: none;
+}
+.paso-dot:hover .paso-num {
+  border-color: var(--azul-boton, #1455a4);
+  color: var(--azul-boton, #1455a4);
+}
+.paso-dot.activo:hover .paso-num,
+.paso-dot.completo:hover .paso-num {
+  color: #fff;
+}
+.paso-num {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--gris-bg, #f4f6f9);
+  border: 2px solid var(--gris-bd, #d9dee7);
+  color: var(--gris-txt, #6b7280);
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s;
+}
+.paso-txt {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--gris-txt, #6b7280);
+  transition: color 0.25s;
+}
+.paso-dot.activo .paso-num {
+  background: var(--azul-boton, #1455a4);
+  border-color: var(--azul-boton, #1455a4);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(20, 85, 164, 0.15);
+}
+.paso-dot.activo .paso-txt {
+  color: var(--azul-boton, #1455a4);
+}
+.paso-dot.completo .paso-num {
+  background: var(--verde, #00a064);
+  border-color: var(--verde, #00a064);
+  color: #fff;
+}
+.paso-linea {
+  flex: 1;
+  max-width: 70px;
+  height: 2.5px;
+  background: var(--gris-bd, #d9dee7);
+  border-radius: 2px;
+  margin-bottom: 18px;
+  transition: background 0.25s;
+}
+.paso-linea.completo {
+  background: var(--verde, #00a064);
+}
+
+.paso {
+  display: none;
+}
+.paso.activo {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  animation: pasoIn 0.3s ease;
+}
+@keyframes pasoIn {
+  from { opacity: 0; transform: translateX(14px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.paso-botones {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+}
+.btn-paso {
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 12px 26px;
+  border: none;
+  border-radius: 6px;
+  background: var(--azul-boton, #1455a4);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 3px 12px rgba(20, 85, 164, 0.3);
+}
+.btn-paso:hover {
+  background: var(--azul-claro, #1e6bb8);
+  transform: translateY(-1px);
+}
+.btn-paso.atras {
+  background: #fff;
+  color: var(--gris-txt, #6b7280);
+  border: 1.5px solid var(--gris-bd, #d9dee7);
+  box-shadow: none;
+}
+.btn-paso.atras:hover {
+  border-color: var(--azul-boton, #1455a4);
+  color: var(--azul-boton, #1455a4);
+}
+
+.sistemas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+.sistema-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px;
+  background: #fff;
+  border: 1.5px solid var(--gris-bd, #d9dee7);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+  position: relative;
+}
+.sistema-card:hover {
+  border-color: var(--azul-claro, #1e6bb8);
+  box-shadow: 0 2px 10px rgba(20, 85, 164, 0.1);
+}
+.sistema-card input {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 17px;
+  height: 17px;
+  accent-color: var(--azul-boton, #1455a4);
+}
+.sistema-card .sistema-nombre {
+  font-family: "Montserrat", sans-serif;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--tinta, #1a1a2e);
+  padding-right: 22px;
+}
+.sistema-card .sistema-cod {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--gris-txt, #6b7280);
+}
+.sistema-card:has(input:checked) {
+  background: #eef5fc;
+  border-color: var(--azul-boton, #1455a4);
+}
+.sistema-card:has(input:checked) .sistema-cod {
+  color: var(--azul-boton, #1455a4);
+}
+
+/* Tarjeta deshabilitada por la regla Correo ↔ demás sistemas */
+.sistema-card.bloqueada {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: var(--gris-bg, #f4f6f9);
+}
+.sistema-card.bloqueada:hover {
+  border-color: var(--gris-bd, #d9dee7);
+  box-shadow: none;
+}
+.aviso-exclusion {
+  display: none;
+  font-size: 12.5px;
+  color: #92400e;
+  background: #fffbeb;
+  border: 1.5px solid #fcd34d;
+  border-radius: 6px;
+  padding: 9px 13px;
+  margin: 10px 0 0;
+}
+.aviso-exclusion.show {
+  display: block;
+}
+.sistema-detalle {
+  background: var(--gris-bg, #f4f6f9);
+  border: 1.5px solid var(--gris-bd, #d9dee7);
+  border-left: 4px solid var(--azul-boton, #1455a4);
+  border-radius: 0 8px 8px 0;
+  padding: 16px 18px;
+  /*margin-top: 12px;*/
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.detalle-titulo {
+  font-family: "Montserrat", sans-serif;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--azul-nav, #0b2252);
+}
+.sistema-detalle .acceso-item em {
+  font-style: normal;
+  font-size: 10.5px;
+  color: var(--gris-txt, #6b7280);
+}
+
+/* Mensajes de campo (errores) */
+.field-msg {
+  font-size: 12px;
+  color: var(--error, #c0392b);
+  margin-top: 8px;
+  display: none;
+}
+.field-msg.show {
+  display: block;
+}

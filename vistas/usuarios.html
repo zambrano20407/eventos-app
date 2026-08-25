@@ -1,0 +1,1163 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="/img/icono.png" />
+    <title>Solicitud de Usuarios · Sistemas RNEC | Registraduría Caquetá</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/css/asistencia.css" />
+    <link rel="stylesheet" href="/css/formularios.css" />
+    <link rel="stylesheet" href="/css/usuarios.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- BARRA SUPERIOR -->
+    <div class="top-bar" style="width: 100%">
+      <div class="top-bar-inner">
+        <span class="top-bar-left"
+          >República de Colombia · Organización Electoral</span
+        >
+        <div class="top-bar-right">
+          <span>Solicitud de Usuarios</span>
+          <span class="top-bar-badge registro">Funcionario</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- HEADER -->
+    <div class="header" style="width: 100%">
+      <div class="header-main">
+        <div class="logo-wrap">
+          <img src="/img/Logo 2.jpg" alt="Registraduría" />
+        </div>
+        <div class="header-text-group">
+          <div class="org-name">Registraduría Nacional del Estado Civil</div>
+          <div class="header-titulo">
+            Solicitud de <span>Usuarios de Sistemas</span>
+          </div>
+          <div class="header-subtitulo">
+            Correo · ANI · Web Service · GED · SIRC · HLED · Delegación
+            Departamental Caquetá
+          </div>
+        </div>
+        <div class="ptft-badge">
+          <span class="ptft-code">USUARIOS</span>
+          <span class="ptft-ver">RNEC</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORMULARIO -->
+    <div class="card" id="cardFormulario">
+      <div class="card-body" id="formBody">
+        <div class="ev-banner">
+          <div class="ev-label">Solicitud unificada de cuentas de usuario</div>
+          <div class="ev-nombre">
+            Diligencie sus datos una sola vez y marque los sistemas que necesita
+          </div>
+          <div class="ev-meta">
+            La Delegación gestionará la creación con los formatos oficiales de
+            cada sistema
+          </div>
+        </div>
+
+        <!-- BARRA DE PROGRESO -->
+        <div class="pasos-nav">
+          <div class="paso-dot activo" id="dot1">
+            <span class="paso-num">1</span
+            ><span class="paso-txt">Sus datos</span>
+          </div>
+          <div class="paso-linea" id="linea1"></div>
+          <div class="paso-dot" id="dot2">
+            <span class="paso-num">2</span
+            ><span class="paso-txt">Sistemas</span>
+          </div>
+          <div class="paso-linea" id="linea2"></div>
+          <div class="paso-dot" id="dot3">
+            <span class="paso-num">3</span
+            ><span class="paso-txt">Firma y envío</span>
+          </div>
+        </div>
+
+        <!-- ════════ PASO 1: DATOS BÁSICOS ════════ -->
+        <div class="paso activo" id="paso1">
+          <!-- ══ 1. DATOS DEL FUNCIONARIO ══ -->
+          <div class="modulo-titulo">1 · Datos del funcionario</div>
+          <div class="grid-2col">
+            <div class="field">
+              <label>Nombres <span class="req">*</span></label
+              ><input type="text" id="nombres" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label>Apellidos <span class="req">*</span></label
+              ><input type="text" id="apellidos" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label>Cédula de ciudadanía <span class="req">*</span></label
+              ><input
+                type="text"
+                id="cedula"
+                inputmode="numeric"
+                maxlength="12"
+                autocomplete="off"
+              />
+            </div>
+            <div class="field">
+              <label>Teléfono <span class="req">*</span></label
+              ><input
+                type="text"
+                id="telefono"
+                inputmode="numeric"
+                maxlength="10"
+                placeholder="10 dígitos"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+          <div class="field">
+            <label
+              >Correo electrónico personal o institucional
+              <span class="req">*</span></label
+            ><input type="email" id="correo" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label>Cargo <span class="req">*</span></label>
+            <div class="pills nivel">
+              <div class="pill">
+                <input
+                  type="radio"
+                  name="cargo"
+                  id="c_rm"
+                  value="Registrador Municipal"
+                /><label for="c_rm">Registrador Municipal</label>
+              </div>
+              <div class="pill">
+                <input
+                  type="radio"
+                  name="cargo"
+                  id="c_re"
+                  value="Registrador Especial"
+                /><label for="c_re">Registrador Especial</label>
+              </div>
+              <div class="pill">
+                <input
+                  type="radio"
+                  name="cargo"
+                  id="c_pu"
+                  value="Profesional Universitario"
+                /><label for="c_pu">Profesional Universitario</label>
+              </div>
+              <div class="pill">
+                <input
+                  type="radio"
+                  name="cargo"
+                  id="c_as"
+                  value="Analista de Sistemas"
+                /><label for="c_as">Analista de Sistemas</label>
+              </div>
+              <div class="pill">
+                <input
+                  type="radio"
+                  name="cargo"
+                  id="c_ta"
+                  value="Técnico Administrativo"
+                /><label for="c_ta">Técnico Administrativo</label>
+              </div>
+              <div class="pill">
+                <input
+                  type="radio"
+                  name="cargo"
+                  id="c_to"
+                  value="Técnico Operativo"
+                /><label for="c_to">Técnico Operativo</label>
+              </div>
+              <div class="pill">
+                <input
+                  type="radio"
+                  name="cargo"
+                  id="c_aa"
+                  value="Auxiliar Administrativo"
+                /><label for="c_aa">Auxiliar Administrativo</label>
+              </div>
+              <div class="pill">
+                <input
+                  type="radio"
+                  name="cargo"
+                  id="c_se"
+                  value="Secretario"
+                /><label for="c_se">Secretario</label>
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Tipo de vinculación <span class="req">*</span></label>
+            <div class="pills nivel">
+              <div class="pill">
+                <input
+                  type="radio"
+                  name="vinculacion"
+                  id="v_pla"
+                  value="Planta"
+                /><label for="v_pla">Planta</label>
+              </div>
+              <div class="pill">
+                <input
+                  type="radio"
+                  name="vinculacion"
+                  id="v_pro"
+                  value="Provisional"
+                /><label for="v_pro">Provisional</label>
+              </div>
+              <div class="pill">
+                <input
+                  type="radio"
+                  name="vinculacion"
+                  id="v_sup"
+                  value="Supernumerario"
+                /><label for="v_sup">Supernumerario</label>
+              </div>
+              <div class="pill">
+                <input
+                  type="radio"
+                  name="vinculacion"
+                  id="v_con"
+                  value="Contratista"
+                /><label for="v_con">Contratista</label>
+              </div>
+              <div class="pill">
+                <input
+                  type="radio"
+                  name="vinculacion"
+                  id="v_dir"
+                  value="Directivo"
+                /><label for="v_dir">Directivo</label>
+              </div>
+            </div>
+          </div>
+          <div class="grid-2col">
+            <div class="field">
+              <label>Oficina <span class="req">*</span></label>
+              <div class="select-wrap">
+                <select id="oficina">
+                  <option value="">— Seleccione su oficina —</option>
+                  <option>Delegación Departamental</option>
+                  <option>Registraduría Especial de Florencia</option>
+                  <option>Registraduría Municipal de Albania</option>
+                  <option>
+                    Registraduría Municipal de Belén de los Andaquíes
+                  </option>
+                  <option>
+                    Registraduría Municipal de Cartagena del Chairá
+                  </option>
+                  <option>Registraduría Municipal de Curillo</option>
+                  <option>Registraduría Municipal de El Doncello</option>
+                  <option>Registraduría Municipal de El Paujil</option>
+                  <option>Registraduría Municipal de La Montañita</option>
+                  <option>Registraduría Municipal de Milán</option>
+                  <option>Registraduría Municipal de Morelia</option>
+                  <option>Registraduría Municipal de Puerto Rico</option>
+                  <option>
+                    Registraduría Municipal de San José del Fragua
+                  </option>
+                  <option>
+                    Registraduría Municipal de San Vicente del Caguán
+                  </option>
+                  <option>Registraduría Municipal de Solano</option>
+                  <option>Registraduría Municipal de Solita</option>
+                  <option>Registraduría Municipal de Valparaíso</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label>Ciudad / Municipio <span class="req">*</span></label>
+              <input
+                type="text"
+                id="ciudad"
+                placeholder="Se llena al elegir la oficina"
+                readonly
+                style="background: #eef0f4; cursor: not-allowed"
+              />
+            </div>
+            <div class="field">
+              <label>Departamento</label>
+              <input
+                type="text"
+                id="departamento"
+                value="CAQUETÁ"
+                readonly
+                style="background: #eef0f4; cursor: not-allowed"
+              />
+            </div>
+          </div>
+          <div class="grid-2col">
+            <div class="field">
+              <label>Vigencia — Desde <span class="req">*</span></label
+              ><input
+                type="date"
+                id="vigDesde"
+                readonly
+                style="background: #eef0f4; cursor: not-allowed"
+              />
+            </div>
+            <div class="field">
+              <label>Vigencia — Hasta <span class="req">*</span></label
+              ><input type="date" id="vigHasta" />
+            </div>
+          </div>
+          <p class="modulo-sub" style="margin-top: -8px">
+            "Desde" es la fecha de hoy. En "Hasta" indique el fin de su
+            vinculación o contrato.
+          </p>
+
+          <div class="paso-botones">
+            <span></span>
+            <button class="btn-paso" onclick="irPaso(2)">Siguiente →</button>
+          </div>
+        </div>
+        <!-- /paso1 -->
+
+        <!-- ════════ PASO 2: SISTEMAS ════════ -->
+        <div class="paso" id="paso2">
+          <!-- ══ 2. SISTEMAS SOLICITADOS ══ -->
+          <div class="modulo-titulo">2 · ¿Qué usuarios necesita?</div>
+          <p class="modulo-sub">
+            Marque uno o varios sistemas. El
+            <strong>Correo Institucional</strong> se tramita en un formato
+            aparte, así que no puede combinarse con los demás.
+          </p>
+          <div class="sistemas-grid">
+            <label class="sistema-card"
+              ><input type="checkbox" id="sis_correo" value="correo" /><span
+                class="sistema-nombre"
+                >📧 Correo Institucional</span
+              ><span class="sistema-cod">GIFT05</span></label
+            >
+            <label class="sistema-card"
+              ><input type="checkbox" id="sis_ani" value="ani" /><span
+                class="sistema-nombre"
+                >🪪 ANI — Consulta</span
+              ><span class="sistema-cod">CDFT05</span></label
+            >
+            <label class="sistema-card"
+              ><input type="checkbox" id="sis_ws" value="webservice" /><span
+                class="sistema-nombre"
+                >🔌 Web Service</span
+              ><span class="sistema-cod">CDFT09</span></label
+            >
+            <label class="sistema-card"
+              ><input type="checkbox" id="sis_gedid" value="gedid" /><span
+                class="sistema-nombre"
+                >📁 GED ID</span
+              ><span class="sistema-cod">CDFT12</span></label
+            >
+            <label class="sistema-card"
+              ><input type="checkbox" id="sis_gedrc" value="gedrc" /><span
+                class="sistema-nombre"
+                >📂 GED RC</span
+              ><span class="sistema-cod">CDFT12</span></label
+            >
+            <label class="sistema-card"
+              ><input type="checkbox" id="sis_sirc" value="sirc" /><span
+                class="sistema-nombre"
+                >📋 SIRC</span
+              ><span class="sistema-cod">CDFT23</span></label
+            >
+            <label class="sistema-card"
+              ><input type="checkbox" id="sis_hled" value="hled" /><span
+                class="sistema-nombre"
+                >📄 HLED</span
+              ><span class="sistema-cod">CDFT20</span></label
+            >
+          </div>
+          <p class="aviso-exclusion" id="avisoExclusion"></p>
+
+          <!-- ══ TIPO DE SOLICITUD (aparece al elegir el sistema) ══ -->
+          <div id="bloqueTipoSolicitud" style="display: none">
+            <hr class="sep" />
+            <div class="modulo-titulo">Tipo de solicitud</div>
+            <p class="modulo-sub" id="notaTipoSolicitud"></p>
+            <div class="field">
+              <div class="pills" id="pillsTipoSolicitud">
+                <div class="pill" data-solo="cdft">
+                  <input
+                    type="radio"
+                    name="tipoSolicitud"
+                    id="ts_crea"
+                    value="Creación"
+                  /><label for="ts_crea">Creación</label>
+                </div>
+                <div class="pill" data-solo="cdft">
+                  <input
+                    type="radio"
+                    name="tipoSolicitud"
+                    id="ts_act"
+                    value="Actualización"
+                  /><label for="ts_act">Actualización</label>
+                </div>
+                <div class="pill" data-solo="correo">
+                  <input
+                    type="radio"
+                    name="tipoSolicitud"
+                    id="ts_c_crea"
+                    value="Creación"
+                  /><label for="ts_c_crea">Creación</label>
+                </div>
+                <div class="pill" data-solo="correo">
+                  <input
+                    type="radio"
+                    name="tipoSolicitud"
+                    id="ts_c_camb"
+                    value="Cambio de Responsable"
+                  /><label for="ts_c_camb">Cambio de Responsable</label>
+                </div>
+                <div class="pill" data-solo="correo">
+                  <input
+                    type="radio"
+                    name="tipoSolicitud"
+                    id="ts_c_bloq"
+                    value="Bloqueo"
+                  /><label for="ts_c_bloq">Bloqueo</label>
+                </div>
+                <div class="pill" data-solo="correo">
+                  <input
+                    type="radio"
+                    name="tipoSolicitud"
+                    id="ts_c_elim"
+                    value="Eliminación"
+                  /><label for="ts_c_elim">Eliminación</label>
+                </div>
+                <div class="pill" data-solo="correo">
+                  <input
+                    type="radio"
+                    name="tipoSolicitud"
+                    id="ts_c_actu"
+                    value="Actualización de datos"
+                  /><label for="ts_c_actu">Actualización de datos</label>
+                </div>
+              </div>
+            </div>
+            <div
+              class="field"
+              style="margin-top: 8px"
+              id="campoUsuario"
+              style="display: none"
+            >
+              <label>Nombre de usuario actual <span class="req">*</span></label>
+              <input
+                type="text"
+                id="nombreUsuario"
+                maxlength="15"
+                placeholder="Ej: ommojica"
+                autocomplete="off"
+              />
+              <p class="modulo-sub" style="margin: 2px 0 0">
+                Solo letras, máximo 15 caracteres.
+              </p>
+            </div>
+          </div>
+
+          <!-- ── Detalle ANI ── -->
+          <div class="sistema-detalle" id="det_ani" style="display: none">
+            <div class="detalle-titulo">🪪 ANI — Perfil para configurar</div>
+            <div class="accesos-grid">
+              <label class="acceso-item"
+                ><input type="checkbox" data-sis="ani" value="Consultas ANI" />
+                Consultas ANI</label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-sis="ani"
+                  value="Archivo general"
+                />
+                Archivo general</label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-sis="ani"
+                  value="Información ciudadana"
+                />
+                Información ciudadana</label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-sis="ani"
+                  value="Recepción secretaría"
+                />
+                Recepción secretaría</label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-sis="ani"
+                  value="Soporte técnico interfaz"
+                />
+                Soporte técnico interfaz</label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-sis="ani"
+                  value="Centros de Acopio"
+                />
+                Centros de Acopio</label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-sis="ani"
+                  value="Derechos de petición"
+                />
+                Derechos de petición</label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-sis="ani"
+                  value="Notificación resoluciones"
+                />
+                Notificación resoluciones</label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-sis="ani"
+                  value="Certificaciones vigencia"
+                />
+                Certificaciones vigencia</label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-sis="ani"
+                  value="Correspondencia modificación"
+                />
+                Correspondencia modificación</label
+              >
+              <label class="acceso-item"
+                ><input type="checkbox" data-sis="ani" value="Registradores" />
+                Registradores</label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-sis="ani"
+                  value="Duplicados pre envío"
+                />
+                Duplicados pre envío</label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-sis="ani"
+                  value="Cedulación exterior"
+                />
+                Cedulación exterior</label
+              >
+              <label class="acceso-item"
+                ><input type="checkbox" data-sis="ani" value="Secretaría" />
+                Secretaría</label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-sis="ani"
+                  value="Envíos coordinación"
+                />
+                Envíos coordinación</label
+              >
+            </div>
+            <div class="detalle-titulo" style="margin-top: 12px">
+              Datos a consultar
+            </div>
+            <div class="accesos-grid">
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-ani-dato
+                  value="Cédula de ciudadanía"
+                />
+                Cédula de ciudadanía <em>(público)</em></label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-ani-dato
+                  value="Nombres y apellidos"
+                />
+                Nombres y apellidos <em>(público)</em></label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-ani-dato
+                  value="Lugar de expedición"
+                />
+                Lugar de expedición <em>(público)</em></label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-ani-dato
+                  value="Fecha de expedición"
+                />
+                Fecha de expedición <em>(público)</em></label
+              >
+              <label class="acceso-item"
+                ><input type="checkbox" data-ani-dato value="Vigencia" />
+                Vigencia <em>(público)</em></label
+              >
+              <label class="acceso-item"
+                ><input type="checkbox" data-ani-dato value="Resolución" />
+                Resolución <em>(público)</em></label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-ani-dato
+                  value="Fecha de nacimiento"
+                />
+                Fecha de nacimiento <em>(semiprivado)</em></label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-ani-dato
+                  value="Lugar de nacimiento"
+                />
+                Lugar de nacimiento <em>(semiprivado)</em></label
+              >
+              <label class="acceso-item"
+                ><input type="checkbox" data-ani-dato value="Grupo sanguíneo" />
+                Grupo sanguíneo <em>(semiprivado)</em></label
+              >
+              <label class="acceso-item"
+                ><input type="checkbox" data-ani-dato value="Estatura" />
+                Estatura <em>(sensible)</em></label
+              >
+              <label class="acceso-item"
+                ><input type="checkbox" data-ani-dato value="Sexo" /> Sexo
+                <em>(sensible)</em></label
+              >
+            </div>
+            <div class="field" style="margin-top: 12px">
+              <label
+                >Dirección IP del equipo donde funcionará
+                <span class="req">*</span></label
+              >
+              <input
+                type="text"
+                id="aniIp"
+                inputmode="decimal"
+                maxlength="15"
+                placeholder="Ej. 172.27.20.30 (si la conoce)"
+                autocomplete="off"
+                required
+                pattern="^((25[0-5]|(2[0-4]\\d)|(1\\d{2})|([1-9]?\\d))\\.){3}(25[0-5]|(2[0-4]\\d)|(1\\d{2})|([1-9]?\\d))$
+            "
+                title="Ej. 172.27.20.30 — cuatro octetos entre 0 y 255"
+              />
+              <div
+                class="field-msg"
+                id="aniIpError"
+                aria-live="polite"
+                style="display: none"
+              ></div>
+            </div>
+          </div>
+
+          <!-- ── Detalle WEB SERVICE ── -->
+          <div
+            class="sistema-detalle"
+            id="det_webservice"
+            style="display: none"
+          >
+            <div class="detalle-titulo">🔌 Web Service — Tipo de acceso</div>
+            <div class="accesos-grid">
+              <label class="acceso-item"
+                ><input type="checkbox" data-sis="webservice" value="SCA" />
+                SCA</label
+              >
+              <label class="acceso-item"
+                ><input type="checkbox" data-sis="webservice" value="SSC" />
+                SSC</label
+              >
+              <label class="acceso-item"
+                ><input type="checkbox" data-sis="webservice" value="CCT" />
+                CCT</label
+              >
+              <label class="acceso-item"
+                ><input type="checkbox" data-sis="webservice" value="INV. CC" />
+                INV. CC</label
+              >
+              <label class="acceso-item"
+                ><input type="checkbox" data-sis="webservice" value="INV. TI" />
+                INV. TI</label
+              >
+              <label class="acceso-item"
+                ><input type="checkbox" data-sis="webservice" value="VERIF" />
+                VERIF</label
+              >
+              <label class="acceso-item"
+                ><input type="checkbox" data-sis="webservice" value="1.1" />
+                1.1</label
+              >
+              <label class="acceso-item"
+                ><input type="checkbox" data-sis="webservice" value="1.N" />
+                1.N</label
+              >
+              <label class="acceso-item"
+                ><input type="checkbox" data-sis="webservice" value="CAL" />
+                CAL</label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-sis="webservice"
+                  value="Impresión"
+                />
+                Impresión</label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-sis="webservice"
+                  value="Reimpresión de documentos"
+                />
+                Reimpresión de documentos</label
+              >
+            </div>
+          </div>
+
+          <!-- ── Detalle GED ID ── -->
+          <div class="sistema-detalle" id="det_gedid" style="display: none">
+            <div class="detalle-titulo">📁 GED ID — Tipo de acceso</div>
+            <div class="pills">
+              <div class="pill">
+                <input
+                  type="radio"
+                  name="gedidAcceso"
+                  id="gi_con"
+                  value="Consulta"
+                /><label for="gi_con">Consulta</label>
+              </div>
+              <div class="pill">
+                <input
+                  type="radio"
+                  name="gedidAcceso"
+                  id="gi_imp"
+                  value="Consulta e Impresión"
+                /><label for="gi_imp">Consulta e Impresión</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Detalle GED RC ── -->
+          <div class="sistema-detalle" id="det_gedrc" style="display: none">
+            <div class="detalle-titulo">📂 GED RC — Tipo de acceso</div>
+            <div class="pills">
+              <div class="pill">
+                <input
+                  type="radio"
+                  name="gedrcAcceso"
+                  id="gr_con"
+                  value="Consulta"
+                /><label for="gr_con">Consulta</label>
+              </div>
+              <div class="pill">
+                <input
+                  type="radio"
+                  name="gedrcAcceso"
+                  id="gr_imp"
+                  value="Consulta e Impresión"
+                /><label for="gr_imp">Consulta e Impresión</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Detalle SIRC ── -->
+          <div class="sistema-detalle" id="det_sirc" style="display: none">
+            <div class="detalle-titulo">📋 SIRC — Tipo de acceso</div>
+            <div class="accesos-grid">
+              <label class="acceso-item"
+                ><input type="checkbox" data-sis="sirc" value="Estadísticas" />
+                Estadísticas</label
+              >
+              <label class="acceso-item"
+                ><input type="checkbox" data-sis="sirc" value="Consulta" />
+                Consulta</label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-sis="sirc"
+                  value="Consulta GED RCX"
+                />
+                Consulta GED RCX</label
+              >
+              <label class="acceso-item"
+                ><input type="checkbox" data-sis="sirc" value="Corrección" />
+                Corrección</label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-sis="sirc"
+                  value="Expedición Certificado"
+                />
+                Expedición Certificado</label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-sis="sirc"
+                  value="Complementación RCX"
+                />
+                Complementación RCX</label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-sis="sirc"
+                  value="Corrección Manual de Anomalías"
+                />
+                Corrección Manual de Anomalías</label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-sis="sirc"
+                  value="Borrado Lógico"
+                />
+                Borrado Lógico</label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-sis="sirc"
+                  value="DCU Administrador"
+                />
+                DCU Administrador</label
+              >
+              <label class="acceso-item"
+                ><input type="checkbox" data-sis="sirc" value="DCU Operador" />
+                DCU Operador</label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-sis="sirc"
+                  value="DCU Registrador"
+                />
+                DCU Registrador</label
+              >
+              <label class="acceso-item"
+                ><input type="checkbox" data-sis="sirc" value="Grabación RCX" />
+                Grabación RCX</label
+              >
+              <label class="acceso-item"
+                ><input
+                  type="checkbox"
+                  data-sis="sirc"
+                  value="Gestión de Seriales (ANS/GNS)"
+                />
+                Gestión de Seriales (ANS/GNS)</label
+              >
+            </div>
+          </div>
+
+          <!-- ── Detalle CORREO ── -->
+          <div class="sistema-detalle" id="det_correo" style="display: none">
+            <div class="detalle-titulo">
+              📧 Correo Institucional — Datos adicionales
+            </div>
+            <div class="field">
+              <label
+                >¿Requiere buzón de correo electrónico?
+                <span class="req">*</span></label
+              >
+              <div class="pills">
+                <div class="pill">
+                  <input
+                    type="radio"
+                    name="correoBuzon"
+                    id="buzon_si"
+                    value="Sí"
+                    checked
+                  /><label for="buzon_si">Sí</label>
+                </div>
+                <div class="pill">
+                  <input
+                    type="radio"
+                    name="correoBuzon"
+                    id="buzon_no"
+                    value="No"
+                  /><label for="buzon_no">No</label>
+                </div>
+              </div>
+            </div>
+            <div class="grid-2col">
+              <div class="field">
+                <label>Resolución — Número</label
+                ><input
+                  type="text"
+                  id="correoResNum"
+                  inputmode="numeric"
+                  maxlength="6"
+                  placeholder="Ej: 8254"
+                  autocomplete="off"
+                />
+              </div>
+              <div class="field">
+                <label>Resolución — Año</label
+                ><input
+                  type="text"
+                  id="correoResAno"
+                  inputmode="numeric"
+                  maxlength="4"
+                  placeholder="Ej: 2026"
+                  autocomplete="off"
+                />
+              </div>
+            </div>
+            <p class="modulo-sub" style="margin-top: 8px">
+              Corresponde a su resolución de nombramiento. Si es contratista o
+              no la conoce, deje los campos vacíos.
+            </p>
+          </div>
+
+          <div class="paso-botones">
+            <button class="btn-paso atras" onclick="irPaso(1)">← Atrás</button>
+            <button class="btn-paso" onclick="irPaso(3)">Siguiente →</button>
+          </div>
+        </div>
+        <!-- /paso2 -->
+
+        <!-- ════════ PASO 3: AUTORIZA, JUSTIFICACIÓN Y FIRMA ════════ -->
+        <div class="paso" id="paso3">
+          <!-- ══ 3. DATOS DE QUIEN AUTORIZA ══ -->
+          <div class="modulo-titulo" id="tituloAutoriza">
+            3 · Datos de quien autoriza
+          </div>
+          <div class="grid-2col">
+            <div class="field">
+              <label>Nombres <span class="req">*</span></label
+              ><input type="text" id="autNombres" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label>Apellidos <span class="req">*</span></label
+              ><input type="text" id="autApellidos" autocomplete="off" />
+            </div>
+          </div>
+
+          <!-- Cargo: lista de opciones en los formatos CDFT -->
+          <div class="field" id="campoAutCargoLista">
+            <label>Cargo <span class="req">*</span></label>
+            <div class="pills" id="pillsAutCargo">
+              <div class="pill">
+                <input
+                  type="radio"
+                  name="autCargo"
+                  id="ac_del"
+                  value="Delegado Departamental"
+                /><label for="ac_del">Delegado Departamental</label>
+              </div>
+              <div class="pill">
+                <input
+                  type="radio"
+                  name="autCargo"
+                  id="ac_reg"
+                  value="Registrador Distrital"
+                /><label for="ac_reg">Registrador Distrital</label>
+              </div>
+              <div class="pill">
+                <input
+                  type="radio"
+                  name="autCargo"
+                  id="ac_for"
+                  value="Formador"
+                /><label for="ac_for">Formador</label>
+              </div>
+              <div class="pill">
+                <input
+                  type="radio"
+                  name="autCargo"
+                  id="ac_dir"
+                  value="Directivo"
+                /><label for="ac_dir">Directivo</label>
+              </div>
+              <div class="pill">
+                <input
+                  type="radio"
+                  name="autCargo"
+                  id="ac_coo"
+                  value="Coordinador de Área"
+                /><label for="ac_coo">Coordinador de Área</label>
+              </div>
+            </div>
+            <p class="modulo-sub" id="notaAutCargo" style="margin-top: 6px"></p>
+          </div>
+
+          <!-- Cargo y dependencia del jefe inmediato: se deducen de la
+             oficina del paso 1 (formato de Correo) -->
+          <div id="campoAutCargoTexto" style="display: none">
+            <div class="field">
+              <label>Cargo del jefe inmediato</label>
+              <input
+                type="text"
+                id="autCargoTexto"
+                readonly
+                style="background: #eef0f4; cursor: not-allowed"
+              />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Dependencia</label>
+            <input
+              type="text"
+              id="autDependencia"
+              value="DELEGACIÓN DEPARTAMENTAL DEL CAQUETÁ"
+              readonly
+              style="background: #eef0f4; cursor: not-allowed"
+            />
+          </div>
+         <!-- <div class="nota-firma" id="notaFirmaAutoriza">
+            ℹ️ La firma de quien autoriza se estampa a mano sobre cada formato
+            impreso.
+          </div>-->
+
+          <hr class="sep" id="sepJustificacion" />
+
+          <!-- ══ 4. JUSTIFICACIÓN (no aplica al formato de Correo) ══ -->
+          <div id="bloqueJustificacion">
+            <div class="modulo-titulo">4 · Justificación de acceso</div>
+            <div class="field">
+              <label
+                >Describa la finalidad del uso de la información acorde a sus
+                funciones <span class="req">*</span></label
+              >
+              <textarea
+                id="justificacion"
+                rows="4"
+                placeholder="Aplica para todos los sistemas solicitados."
+              ></textarea>
+            </div>
+            <hr class="sep" />
+          </div>
+
+          <!-- FIRMA -->
+          <div class="field">
+            <div class="sig-header">
+              <label
+                >✍️ &nbsp;Firma del funcionario
+                <span class="req">*</span></label
+              >
+              <button class="btn-clear" onclick="clearSig()">
+                Borrar firma
+              </button>
+            </div>
+            <div class="canvas-wrap" id="canvasWrap">
+              <canvas id="sigCanvas" width="540" height="130"></canvas>
+              <div class="canvas-hint" id="canvasHint">
+                <span>Dibuje su firma aquí con el ratón o el dedo</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="paso-botones">
+            <button class="btn-paso atras" onclick="irPaso(2)">← Atrás</button>
+            <span></span>
+          </div>
+
+          <button class="btn-submit" id="btnEnviar" onclick="enviar()">
+            <span class="btn-txt">
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Enviar solicitud de usuarios
+            </span>
+            <div class="spinner"></div>
+          </button>
+        </div>
+        <!-- /paso3 -->
+      </div>
+
+      <!-- ÉXITO -->
+      <div class="success-panel" id="successPanel">
+        <div class="check-circle">
+          <svg
+            width="34"
+            height="34"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#fff"
+            stroke-width="2.5"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </div>
+        <h2 class="success-title">¡Solicitud enviada!</h2>
+        <p class="success-name" id="sNombre"></p>
+        <p class="success-dep" id="sSistemas"></p>
+        <p class="success-sub">
+          La Delegación Departamental gestionará la creación de sus usuarios y
+          le informará cuando estén activos.
+        </p>
+        <button class="btn-nuevo" onclick="resetForm()">
+          Enviar otra solicitud
+        </button>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="page-footer">
+      <div class="footer-teal-bar"></div>
+      <div class="footer-body">
+        <img class="footer-logo" src="/img/Logo 2.jpg" alt="Registraduría" />
+        <div class="footer-divider"></div>
+        <div class="footer-info">
+          <div class="footer-org">Registraduría Nacional del Estado Civil</div>
+          <div class="footer-sub">
+            Delegación Departamental Caquetá<br />
+            <span class="footer-dir">
+              <img
+                src="/img/ico-footer-location.svg"
+                alt="Ubicación"
+                class="footer-dir-ico"
+              />
+              Calle 15 N°. 15-20 Piso 2, Florencia – Caquetá &nbsp;CP: 180001
+            </span>
+          </div>
+        </div>
+        <div class="footer-right-block">
+          <div class="footer-ptft">USUARIOS</div>
+          <div class="footer-ver">RNEC · 2026</div>
+          <div class="e26-dots">
+            <div class="e26-dot" style="background: var(--e26-amarillo)"></div>
+            <div class="e26-dot" style="background: var(--e26-azul)"></div>
+            <div class="e26-dot" style="background: var(--e26-rojo)"></div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        Copyright 2026 © – Registraduría Nacional del Estado Civil.
+      </div>
+    </div>
+
+    <script type="module" src="/js/usuarios.js"></script>
+  </body>
+</html>
