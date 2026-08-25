@@ -4,7 +4,32 @@
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "Formato Usuarios/**",
+      "Python/**",
+      "vistas/demo-tablero.html"
+    ],
+    "headers": [
+      {
+        "//": "Codigo y plantillas (Word/Excel): revalidar siempre, para que un deploy se vea de inmediato",
+        "source": "**/*.@(js|css|html|docx|xlsx)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, must-revalidate"
+          }
+        ]
+      },
+      {
+        "//": "Imagenes: cache de 1 dia (casi nunca cambian)",
+        "source": "**/*.@(jpg|jpeg|png|svg|ico)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=86400"
+          }
+        ]
+      }
     ]
   }
 }
