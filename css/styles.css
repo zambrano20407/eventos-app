@@ -131,8 +131,11 @@ body > * {
 ══════════════════════════════════════════════ */
 .header {
   width: 100%;
-  /*background: linear-gradient(180deg, rgba(11,34,82,.97) 0%, rgba(13,44,110,.95) 100%);*/
+  /* Color de respaldo: si la foto tarda o no carga, el header sigue azul */
+  background-color: var(--azul-oscuro, #0b2252);
   background-image: url("/img/im1.png");
+  background-size: cover;
+  background-position: center;
   position: relative;
   overflow: hidden;
 }
@@ -287,8 +290,11 @@ body > * {
 .page-footer {
   width: 100%;
   margin-top: auto;
-  /*background: var(--azul-oscuro);*/
+  /* Color de respaldo: si la foto tarda o no carga, el footer sigue azul */
+  background-color: var(--azul-oscuro, #0b2252);
   background-image: url("/img/im1.png");
+  background-size: cover;
+  background-position: center;
   box-shadow: 0 -4px 20px rgba(11, 34, 82, 0.2);
 }
 .footer-teal-bar {
