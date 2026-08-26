@@ -423,6 +423,27 @@ tbody td {
   background: #fafcff;
 }
 
+/* Borrar un registro: discreto en reposo para no invitar al clic, y
+   claramente rojo al acercarse, porque la acción no tiene vuelta atrás */
+.btn-borrar-reg {
+  width: 26px;
+  height: 26px;
+  border: 1.5px solid var(--gris-bd);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--gris-txt);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-borrar-reg:hover,
+.btn-borrar-reg:focus-visible {
+  background: #fdecea;
+  border-color: var(--error);
+  color: var(--error);
+}
+
 /* ══ STATS ══ */
 .stats-grid {
   display: grid;

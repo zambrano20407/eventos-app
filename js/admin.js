@@ -251,6 +251,33 @@ window.eliminarEvento = async function (evId) {
 };
 
 /* ══════════════════════════════════════════
+   ELIMINAR UN REGISTRO DE ASISTENCIA
+
+   Pasa que alguien se registra en broma o escribe mal sus datos, y el
+   listado es el soporte oficial del evento: debe poder corregirse.
+══════════════════════════════════════════ */
+window.eliminarRegistro = async function (evId, regId) {
+  // Buscamos el registro en lo que ya está en pantalla, para nombrar a
+  // quién se va a borrar: confirmar sobre un "¿seguro?" a secas es como
+  // no confirmar nada.
+  const reg = (window._regActuales || []).find((r) => r.id === regId);
+  const quien = reg ? `${reg.nombre} (C.C. ${reg.cedula})` : "este registro";
+
+  if (!confirm(`¿Eliminar la asistencia de ${quien}?\n\nEsta acción no se puede deshacer.`)) {
+    return;
+  }
+
+  try {
+    await deleteDoc(doc(db, COL_REGS(evId), regId));
+    // No hace falta redibujar: la tabla escucha en tiempo real y la
+    // fila desaparece sola, aquí y en cualquier otra sesión abierta.
+  } catch (err) {
+    console.error("Error eliminando el registro:", err);
+    alert("No se pudo eliminar. Revise la consola.");
+  }
+};
+
+/* ══════════════════════════════════════════
    CERRAR / REABRIR EVENTO
 ══════════════════════════════════════════ */
 window.toggleCerrarEvento = async function (evId, cerrado) {
@@ -450,7 +477,7 @@ window.cargarRegistros = async function () {
 
   if (!evId) {
     tabla.innerHTML =
-      '<tr><td colspan="8" class="sin-datos">Seleccione un evento.</td></tr>';
+      '<tr><td colspan="9" class="sin-datos">Seleccione un evento.</td></tr>';
     document.getElementById("regTitulo").textContent =
       "Registros de asistencia";
     document.getElementById("regSub").textContent = "";
@@ -461,7 +488,7 @@ window.cargarRegistros = async function () {
     return;
   }
 
-  tabla.innerHTML = '<tr><td colspan="8" class="sin-datos">Cargando…</td></tr>';
+  tabla.innerHTML = '<tr><td colspan="9" class="sin-datos">Cargando…</td></tr>';
 
   try {
     const evDoc = await getDocs(collection(db, COL_EVENTOS));
@@ -488,7 +515,7 @@ window.cargarRegistros = async function () {
 
         if (regs.empty) {
           tabla.innerHTML =
-            '<tr><td colspan="8" class="sin-datos">Sin registros en este evento.<br><small>Esta tabla se actualiza sola cuando alguien se registre.</small></td></tr>';
+            '<tr><td colspan="9" class="sin-datos">Sin registros en este evento.<br><small>Esta tabla se actualiza sola cuando alguien se registre.</small></td></tr>';
           window._regActuales = [];
           return;
         }
@@ -512,6 +539,8 @@ window.cargarRegistros = async function () {
         <td><span class="nivel-badge">${r.nivel}</span></td>
         <td style="font-size:11px;color:var(--txt)">${hora}</td>
         <td><img class="thumb-firma" src="${r.firma}" onclick="verFirma('${r.firma}','${r.nombre.replace(/'/g, "\\'")}')"></td>
+        <td><button class="btn-borrar-reg" title="Eliminar este registro"
+          onclick="eliminarRegistro('${evId}','${r.id}')">✕</button></td>
       </tr>`;
           })
           .join("");
@@ -522,13 +551,13 @@ window.cargarRegistros = async function () {
       (err) => {
         console.error("Error en tiempo real:", err);
         tabla.innerHTML =
-          '<tr><td colspan="8" class="sin-datos" style="color:var(--error)">Error al cargar. Revise la consola.</td></tr>';
+          '<tr><td colspan="9" class="sin-datos" style="color:var(--error)">Error al cargar. Revise la consola.</td></tr>';
       },
     );
   } catch (err) {
     console.error("Error cargando registros:", err);
     tabla.innerHTML =
-      '<tr><td colspan="8" class="sin-datos" style="color:var(--error)">Error al cargar. Revise la consola.</td></tr>';
+      '<tr><td colspan="9" class="sin-datos" style="color:var(--error)">Error al cargar. Revise la consola.</td></tr>';
   }
 };
 
