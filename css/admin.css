@@ -559,7 +559,9 @@ tbody td {
   margin-bottom: 0;
 }
 .graf-fila .etq {
-  width: 118px;
+  /* 130px es lo que miden los municipios de nombre más largo del
+     departamento ("Belén de los Andaquíes", "San Vicente del Caguán") */
+  width: 130px;
   flex-shrink: 0;
   text-align: right;
   white-space: nowrap;

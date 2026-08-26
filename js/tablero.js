@@ -28,6 +28,16 @@ function contarPor(registros, campo) {
   return Object.entries(cuenta).sort((a, b) => b[1] - a[1]);
 }
 
+/* Deja solo el municipio de una dependencia. Todas las registradurías
+   empiezan con el mismo prefijo, así que en una etiqueta corta lo único
+   que distingue una de otra es lo que va después. */
+function nombreCorto(dependencia) {
+  return (dependencia || "")
+    .replace(/^Registradur[íi]a\s+(Municipal|Especial|Auxiliar)\s+de\s+/i, "")
+    .replace(/^Delegaci[óo]n\s+Departamental\s+(de\s+)?/i, "Delegación ")
+    .trim();
+}
+
 /* Barras horizontales. El valor va escrito al lado de cada barra para
    que el dato exacto se lea sin depender del color ni del largo. */
 function pintarBarras(contenedor, datos, color) {
@@ -39,10 +49,11 @@ function pintarBarras(contenedor, datos, color) {
   }
   const mayor = datos[0][1] || 1;
   caja.innerHTML = datos
-    .map(([etiqueta, n]) => {
+    .map(([etiqueta, n, completo]) => {
       const ancho = Math.max(3, Math.round((n / mayor) * 100));
       const tono = typeof color === "function" ? color(etiqueta) : color;
-      return `<div class="graf-fila" title="${etiqueta}: ${n}">
+      // Si la etiqueta viene acortada, el tooltip conserva el nombre entero
+      return `<div class="graf-fila" title="${completo || etiqueta}: ${n}">
         <span class="etq">${etiqueta}</span>
         <span class="pista"><span class="barra" style="width:${ancho}%;background:${tono}"></span></span>
         <span class="val">${n}</span>
@@ -130,7 +141,13 @@ export function pintarTablero(todosEventos, todosRegistros, evId) {
     `${municipiosCubiertos(registros).size}/${MUNICIPIOS_CAQUETA.length}`;
 
   // ── Gráficos ──
-  pintarBarras("grafDependencia", contarPor(registros, "dependencia").slice(0, 8), "#1455a4");
+  // En la barra solo cabe el municipio: con el nombre completo todas
+  // empiezan igual ("Registraduría Munic...") y no se distinguen.
+  // El nombre entero sigue en el tooltip y en la tabla de detalle.
+  const porDependencia = contarPor(registros, "dependencia")
+    .slice(0, 8)
+    .map(([dep, n]) => [nombreCorto(dep), n, dep]);
+  pintarBarras("grafDependencia", porDependencia, "#1455a4");
   pintarDona("grafNivel", contarPor(registros, "nivel"));
   pintarBarras("grafSexo", contarPor(registros, "sexo"), (etq) =>
     etq.toLowerCase().startsWith("f") ? "#6b4fa8" : "#009aad",
