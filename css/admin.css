@@ -460,6 +460,90 @@ tbody td {
   color: var(--azul-nav);
   margin-bottom: 8px;
 }
+/* Selector de modo de convocatoria */
+.conv-modos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.conv-modo {
+  text-align: left;
+  padding: 10px 12px;
+  border: 1.5px solid var(--gris-bd);
+  border-radius: 7px;
+  background: #fff;
+  color: var(--gris-txt);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.conv-modo small {
+  display: block;
+  font-weight: 400;
+  font-size: 10.5px;
+  margin-top: 2px;
+}
+.conv-modo.activa {
+  border-color: var(--azul-boton);
+  background: #eef4fb;
+  color: var(--azul-boton);
+}
+
+.conv-atajos {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.conv-atajos button {
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border: 1.5px solid var(--gris-bd);
+  border-radius: 20px;
+  background: #fff;
+  color: var(--gris-txt);
+  cursor: pointer;
+}
+.conv-atajos button:hover {
+  border-color: var(--azul-boton);
+  color: var(--azul-boton);
+}
+
+.sedes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 6px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 2px;
+}
+.sede-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  padding: 7px 9px;
+  border: 1.5px solid var(--gris-bd);
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+.sede-item input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--azul-boton);
+  flex-shrink: 0;
+}
+.sede-item:has(input:checked) {
+  background: #eef4fb;
+  border-color: var(--azul-boton);
+  font-weight: 600;
+}
+
 .conv-ayuda {
   font-size: 12px;
   color: var(--gris-txt);

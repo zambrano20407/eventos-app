@@ -61,18 +61,42 @@
       </div>
 
       <div class="demo-card">
-        <div class="section-title">Modal de carga (mostrado en línea)</div>
+        <div class="section-title">Modal de convocatoria (mostrado en línea)</div>
         <div class="modal-box modal-ancho" style="position: static; transform: none">
-          <h3>Lista de convocados</h3>
+          <h3>¿A quién se convocó?</h3>
           <div class="conv-evento" id="convEvento">CAPACITACIÓN SIRC · 25/8/2026</div>
+
+          <div class="conv-modos">
+            <button class="conv-modo activa" id="modoSedes" onclick="modo('sedes')">
+              Por sedes <small>No hace falta saber los nombres</small>
+            </button>
+            <button class="conv-modo" id="modoLista" onclick="modo('lista')">
+              Por lista nominal <small>Cuando hay inscritos</small>
+            </button>
+          </div>
+
+          <div id="bloqueSedes">
+            <p class="conv-ayuda">
+              Marque las sedes citadas. Una sede cuenta como asistente si mandó
+              al menos a una persona.
+            </p>
+            <div class="conv-atajos">
+              <button onclick="marcarTodas(true)">Marcar todas</button>
+              <button onclick="marcarTodas(false)">Ninguna</button>
+            </div>
+            <div class="sedes-grid" id="sedesGrid"></div>
+          </div>
+
+          <div id="bloqueLista" style="display: none">
           <p class="conv-ayuda">
             Pegue aquí la lista de quienes fueron convocados: una persona por
             línea, con la cédula primero. Sirve copiar y pegar desde Excel o Word.
           </p>
           <textarea id="convTexto" rows="7" spellcheck="false" oninput="previsualizar()"></textarea>
           <div class="conv-resumen" id="convResumen">Aún no ha pegado ninguna lista.</div>
+          </div>
           <div class="conv-acciones">
-            <button class="btn-verde">Guardar lista</button>
+            <button class="btn-verde">Guardar convocatoria</button>
             <button class="modal-close">Cancelar</button>
           </div>
         </div>
@@ -80,6 +104,28 @@
     </div>
 
     <script type="module">
+      import { SEDES, sedeCorta } from "../js/sedes.js";
+
+      // Cuadrícula de sedes, igual que en el panel
+      document.getElementById("sedesGrid").innerHTML = SEDES.map(
+        (s, i) => `<label class="sede-item">
+          <input type="checkbox" value="${s.nombre}" id="sede_${i}" checked>
+          <span>${sedeCorta(s.nombre)}</span></label>`,
+      ).join("");
+
+      window.marcarTodas = (v) =>
+        document
+          .querySelectorAll("#sedesGrid input")
+          .forEach((c) => (c.checked = v));
+
+      window.modo = (m) => {
+        const esSedes = m === "sedes";
+        document.getElementById("bloqueSedes").style.display = esSedes ? "block" : "none";
+        document.getElementById("bloqueLista").style.display = esSedes ? "none" : "block";
+        document.getElementById("modoSedes").classList.toggle("activa", esSedes);
+        document.getElementById("modoLista").classList.toggle("activa", !esSedes);
+      };
+
       // Se reusa el mismo código del panel, extraído a mano para la muestra
       const CONVOCADOS = [
         ["1015555555", "JUAN CAMILO POLANCO VASQUEZ"],

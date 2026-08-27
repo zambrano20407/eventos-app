@@ -1,4 +1,5 @@
 import { db } from "./firebase-config.js";
+import { SEDES } from "./sedes.js";
 import {
   collection,
   addDoc,
@@ -23,7 +24,20 @@ let hasSig = false;
 /* ══════════════════════════════════════════
    INIT — espera a que el DOM esté listo
 ══════════════════════════════════════════ */
+/* El desplegable de dependencia se arma desde sedes.js: es la misma
+   lista que el panel usa para saber a quién se convocó, y así no pueden
+   quedar desincronizadas. */
+function llenarDependencias() {
+  const sel = document.getElementById("dependencia");
+  if (!sel) return;
+  sel.insertAdjacentHTML(
+    "beforeend",
+    SEDES.map((s) => `<option>${s.nombre}</option>`).join(""),
+  );
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
+  llenarDependencias();
   const evId = new URLSearchParams(window.location.search).get("ev");
 
   // Sin parámetro ev en la URL → enlace inválido

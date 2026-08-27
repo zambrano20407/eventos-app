@@ -1,5 +1,6 @@
 import { db, auth } from "./firebase-config.js";
 import { pintarTablero } from "./tablero.js";
+import { SEDES, sedeCorta } from "./sedes.js";
 import {
   collection,
   addDoc,
@@ -316,14 +317,62 @@ function cruzarAsistencia(convocados, registros) {
   return { faltaron, noConvocados };
 }
 
+/* Cruce por sede. Una sede asistió si mandó al menos a una persona.
+   Es la medida honesta cuando no se sabe quién va a venir: si Puerto
+   Rico manda tres y Solano ninguno, contar personas daría 100% y
+   escondería que faltó Solano. */
+function cruzarSedes(sedesConvocadas, registros) {
+  const presentes = new Set(
+    (registros || []).map((r) => (r.dependencia || "").trim()),
+  );
+  const asistieron = sedesConvocadas.filter((s) => presentes.has(s));
+  const faltaron = sedesConvocadas.filter((s) => !presentes.has(s));
+  const convocadasSet = new Set(sedesConvocadas);
+  // Sedes que mandaron gente sin haber sido citadas
+  const extras = [...presentes].filter((s) => s && !convocadasSet.has(s));
+  return { asistieron, faltaron, extras };
+}
+
+window.cambiarModoConvocatoria = function (modo) {
+  window._convModo = modo;
+  const esSedes = modo === "sedes";
+  document.getElementById("bloqueSedes").style.display = esSedes ? "block" : "none";
+  document.getElementById("bloqueLista").style.display = esSedes ? "none" : "block";
+  document.getElementById("modoSedes").classList.toggle("activa", esSedes);
+  document.getElementById("modoLista").classList.toggle("activa", !esSedes);
+};
+
+window.marcarSedes = function (marcar) {
+  document
+    .querySelectorAll("#sedesGrid input[type=checkbox]")
+    .forEach((c) => (c.checked = marcar));
+};
+
 window.abrirConvocados = function (evId, nombre) {
   window._convEvId = evId;
   document.getElementById("convEvento").textContent = nombre;
-  const lista = window._convocadosPorEvento?.[evId] || [];
-  document.getElementById("convTexto").value = lista
+
+  const ev = window._eventosPorId?.[evId] || {};
+  const sedesGuardadas = ev.convocaSedes || null;
+  const listaGuardada = ev.convocados || [];
+
+  // Casillas de sede. Si el evento nunca se configuró, se marcan todas:
+  // lo normal es citar a toda la Delegación y quitar las que no aplican.
+  document.getElementById("sedesGrid").innerHTML = SEDES.map((s, i) => {
+    const marcada = sedesGuardadas ? sedesGuardadas.includes(s.nombre) : true;
+    return `<label class="sede-item">
+      <input type="checkbox" value="${s.nombre}" id="sede_${i}" ${marcada ? "checked" : ""}>
+      <span>${sedeCorta(s.nombre)}</span>
+    </label>`;
+  }).join("");
+
+  document.getElementById("convTexto").value = listaGuardada
     .map((c) => `${c.cedula} ${c.nombre}`)
     .join("\n");
   window.previsualizarConvocados();
+
+  // Abrir en el modo que ya tenía configurado el evento
+  window.cambiarModoConvocatoria(listaGuardada.length ? "lista" : "sedes");
   document.getElementById("modalConvocados").classList.add("show");
 };
 
@@ -362,20 +411,37 @@ window.previsualizarConvocados = function () {
 
 window.guardarConvocados = async function () {
   const evId = window._convEvId;
-  const { personas } = leerConvocados(document.getElementById("convTexto").value);
+  const esSedes = window._convModo === "sedes";
 
-  if (!personas.length && !confirm("La lista quedó vacía. ¿Quitar los convocados de este evento?")) {
-    return;
+  // Solo se guarda el modo elegido; el otro se limpia para que no
+  // queden dos convocatorias contradictorias en el mismo evento
+  let cambios;
+  if (esSedes) {
+    const sedes = [...document.querySelectorAll("#sedesGrid input:checked")].map(
+      (c) => c.value,
+    );
+    if (!sedes.length && !confirm("No marcó ninguna sede. ¿Quitar la convocatoria de este evento?")) {
+      return;
+    }
+    cambios = { convocaSedes: sedes, convocados: [] };
+  } else {
+    const { personas } = leerConvocados(document.getElementById("convTexto").value);
+    if (!personas.length && !confirm("La lista quedó vacía. ¿Quitar la convocatoria de este evento?")) {
+      return;
+    }
+    cambios = { convocados: personas, convocaSedes: [] };
   }
 
   try {
-    await updateDoc(doc(db, COL_EVENTOS, evId), { convocados: personas });
-    window._convocadosPorEvento[evId] = personas;
+    await updateDoc(doc(db, COL_EVENTOS, evId), cambios);
+    if (window._eventosPorId?.[evId]) {
+      Object.assign(window._eventosPorId[evId], cambios);
+    }
 
     // Si el panel de registros está mostrando este mismo evento, tenía
-    // la lista vieja en memoria: se actualiza y se repinta
+    // la convocatoria vieja en memoria: se actualiza y se repinta
     if (window._evActual && document.getElementById("regSelector")?.value === evId) {
-      window._evActual.convocados = personas;
+      Object.assign(window._evActual, cambios);
       pintarInasistencia(window._evActual, window._regActuales || []);
     }
 
@@ -397,43 +463,60 @@ window.guardarConvocados = async function () {
    cargada no se inventa nada: el panel simplemente no aparece. */
 function pintarInasistencia(ev, registros) {
   const panel = document.getElementById("panelInasistencia");
-  const convocados = ev?.convocados || [];
+  const sedes = ev?.convocaSedes || [];
+  const personas = ev?.convocados || [];
 
-  if (!convocados.length) {
+  if (!sedes.length && !personas.length) {
     panel.style.display = "none";
     return;
   }
   panel.style.display = "block";
 
-  const { faltaron, noConvocados } = cruzarAsistencia(convocados, registros);
-  const asistieron = convocados.length - faltaron.length;
-  const pct = Math.round((asistieron / convocados.length) * 100);
+  // Cada modo tiene su unidad: sedes o personas. Se resuelve aquí y el
+  // resto del panel se pinta igual para los dos.
+  let total, ausentes, presentes, extras, unidad;
+  if (sedes.length) {
+    const r = cruzarSedes(sedes, registros);
+    total = sedes.length;
+    presentes = r.asistieron.length;
+    ausentes = r.faltaron.map((s) => ({ titulo: sedeCorta(s), pie: "no envió a nadie" }));
+    extras = r.extras.map((s) => sedeCorta(s));
+    unidad = "sedes";
+  } else {
+    const r = cruzarAsistencia(personas, registros);
+    total = personas.length;
+    presentes = total - r.faltaron.length;
+    ausentes = r.faltaron.map((p) => ({ titulo: p.nombre, pie: `C.C. ${p.cedula}` }));
+    extras = r.noConvocados.map((x) => x.nombre);
+    unidad = "convocados";
+  }
 
+  const pct = total ? Math.round((presentes / total) * 100) : 0;
   document.getElementById("asisPorcentaje").textContent = `${pct}%`;
   document.getElementById("asisLlena").style.width = `${pct}%`;
   document.getElementById("asisDetalle").innerHTML =
-    `Asistieron <strong>${asistieron}</strong> de <strong>${convocados.length}</strong> convocados` +
-    (faltaron.length ? ` · faltaron <strong>${faltaron.length}</strong>` : "");
+    `Asistieron <strong>${presentes}</strong> de <strong>${total}</strong> ${unidad}` +
+    (ausentes.length ? ` · faltaron <strong>${ausentes.length}</strong>` : "");
 
   const caja = document.getElementById("faltantesCaja");
-  caja.style.display = faltaron.length ? "block" : "none";
+  caja.style.display = ausentes.length ? "block" : "none";
   document.getElementById("faltantesTitulo").textContent =
-    `Faltaron ${faltaron.length}`;
-  document.getElementById("faltantesLista").innerHTML = faltaron
-    .map((f) => `<div class="falt-item"><span>${f.nombre}</span><small>C.C. ${f.cedula}</small></div>`)
+    `Faltaron ${ausentes.length}`;
+  document.getElementById("faltantesLista").innerHTML = ausentes
+    .map((a) => `<div class="falt-item"><span>${a.titulo}</span><small>${a.pie}</small></div>`)
     .join("");
 
   // Quien llega sin estar convocado se avisa aparte: no baja el
-  // porcentaje, pero conviene saber que la lista quedo corta
-  const extras = document.getElementById("extrasAviso");
-  if (noConvocados.length) {
-    extras.style.display = "block";
-    extras.innerHTML =
-      `<strong>${noConvocados.length}</strong> asistente(s) no estaban en la lista de convocados: ` +
-      noConvocados.map((r) => r.nombre).slice(0, 5).join(", ") +
-      (noConvocados.length > 5 ? "…" : "");
+  // porcentaje, pero conviene saber que la convocatoria quedó corta
+  const aviso = document.getElementById("extrasAviso");
+  if (extras.length) {
+    aviso.style.display = "block";
+    aviso.innerHTML =
+      `<strong>${extras.length}</strong> ${unidad === "sedes" ? "sede(s)" : "asistente(s)"} ` +
+      `sin estar en la convocatoria: ${extras.slice(0, 5).join(", ")}` +
+      (extras.length > 5 ? "…" : "");
   } else {
-    extras.style.display = "none";
+    aviso.style.display = "none";
   }
 }
 
@@ -578,26 +661,39 @@ async function renderEventos() {
       snap.docs.map(async (d) => {
         const ev = { id: d.id, ...d.data() };
         const regs = await getDocs(collection(db, COL_REGS(ev.id)));
-        return { ev, count: regs.size };
+        // Se llevan las dependencias, no solo el total: con convocatoria
+        // por sedes el contador necesita saber cuáles enviaron a alguien
+        return {
+          ev,
+          count: regs.size,
+          regsDocs: regs.docs.map((r) => ({ dependencia: r.data().dependencia })),
+        };
       }),
     );
 
-    // Guardar los convocados para poder reabrir el modal sin releer
-    window._convocadosPorEvento = {};
-    items.forEach(({ ev }) => {
-      window._convocadosPorEvento[ev.id] = ev.convocados || [];
-    });
+    // Guardar los eventos para reabrir el modal sin volver a leer
+    window._eventosPorId = {};
+    items.forEach(({ ev }) => (window._eventosPorId[ev.id] = ev));
 
     list.innerHTML = items
-      .map(({ ev, count }) => {
+      .map(({ ev, count, regsDocs }) => {
         const lnk = generarLink(ev.id);
         const cerrado = !!ev.cerrado;
-        const convocados = ev.convocados || [];
-        // Con lista cargada el contador deja de ser un numero suelto y
-        // pasa a decir cuanto falta del total convocado
-        const conteo = convocados.length
-          ? `${count}/${convocados.length} · ${Math.round((count / convocados.length) * 100)}%`
-          : `${count} reg.`;
+        // Con convocatoria cargada el contador deja de ser un numero
+        // suelto y pasa a decir cuanto falta del total citado
+        const sedesConv = ev.convocaSedes || [];
+        const persConv = ev.convocados || [];
+        const hayConv = sedesConv.length || persConv.length;
+        let conteo = `${count} reg.`;
+        let tituloConteo = "Registros de asistencia";
+        if (sedesConv.length) {
+          const pres = cruzarSedes(sedesConv, regsDocs).asistieron.length;
+          conteo = `${pres}/${sedesConv.length} sedes`;
+          tituloConteo = `${pres} de ${sedesConv.length} sedes convocadas enviaron a alguien`;
+        } else if (persConv.length) {
+          conteo = `${count}/${persConv.length} · ${Math.round((count / persConv.length) * 100)}%`;
+          tituloConteo = `${count} de ${persConv.length} convocados`;
+        }
         return `
       <div class="ev-item ${cerrado ? "cerrado" : ""}">
         <div class="ev-item-top">
@@ -607,8 +703,8 @@ async function renderEventos() {
             <div class="ev-item-meta">${[ev.fecha, ev.jornada, ev.institucion].filter(Boolean).join(" · ")}</div>
           </div>
           <div class="ev-item-actions">
-            <span class="ev-count ${count === 0 ? "cero" : ""}" title="${convocados.length ? `${count} de ${convocados.length} convocados` : "Registros de asistencia"}">${conteo}</span>
-            <button class="btn-convocados ${convocados.length ? "con-lista" : ""}"
+            <span class="ev-count ${count === 0 ? "cero" : ""}" title="${tituloConteo}">${conteo}</span>
+            <button class="btn-convocados ${hayConv ? "con-lista" : ""}"
               title="Cargar o editar la lista de convocados"
               onclick="abrirConvocados('${ev.id}','${(ev.nombre || "").replace(/'/g, "\\'")}')">👥 Convocados</button>
             <button class="btn-qr" onclick="verQR('${ev.id}','${(ev.nombre || "").replace(/'/g, "\\'")}')">▦ Código QR</button>
