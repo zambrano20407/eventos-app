@@ -1,175 +1,341 @@
 /* ============================================================
-   login.css — Estilos de la página de acceso administrativo
+   login.css — Pantalla de acceso al panel
+
+   Diseño partido: a la izquierda la sede con la bandera, a la
+   derecha el formulario sobre fondo claro. Es autónomo, no carga
+   styles.css: aquí no hay barra ni pie institucional que compartir.
    ============================================================ */
 
-.login-wrap {
-  width: 100%;
-  max-width: 420px;
-  padding: 32px 16px;
-  flex: 1;
+:root {
+  --azul-oscuro: #0b2252;
+  --azul-nav: #0d2c6e;
+  --azul-boton: #1455a4;
+  --azul-claro: #1e6bb8;
+  --amarillo: #f5c400;
+  --rojo: #c0392b;
+  --cian: #00a5b5;
+  --tinta: #1a1a2e;
+  --gris-txt: #6b7280;
+  --gris-bd: #d9dee7;
+  --gris-bg: #f4f6f9;
+  --error: #c0392b;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+.login-body {
+  font-family: "Open Sans", sans-serif;
+  color: var(--tinta);
+  background: #eef1f6;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  min-height: 100vh;
+}
+
+/* ══ LADO VISUAL ══ */
+.split-foto {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--azul-oscuro);
+  background-image: url("/img/im1.png");
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: flex-end;
+}
+/* Velo azul: la foto sola no da contraste suficiente para el texto */
+.foto-velo {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    160deg,
+    rgba(11, 34, 82, 0.72) 0%,
+    rgba(11, 34, 82, 0.86) 55%,
+    rgba(13, 44, 110, 0.95) 100%
+  );
+}
+/* Corte diagonal claro, el gesto que da el aire de la referencia */
+.foto-diagonal {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    108deg,
+    transparent 0%,
+    transparent 46%,
+    rgba(0, 165, 181, 0.22) 46%,
+    rgba(0, 165, 181, 0.22) 53%,
+    transparent 53%
+  );
+}
+.foto-texto {
+  position: relative;
+  padding: 0 clamp(28px, 5vw, 68px) clamp(46px, 7vh, 84px);
+  color: #fff;
+  max-width: 640px;
+}
+.foto-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--amarillo);
+  margin-bottom: 14px;
+}
+.foto-texto h1 {
+  font-family: "Montserrat", sans-serif;
+  font-size: clamp(30px, 4vw, 50px);
+  font-weight: 900;
+  line-height: 1.08;
+  margin: 0 0 16px;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
+}
+.foto-texto p {
+  font-size: clamp(13px, 1.2vw, 16px);
+  line-height: 1.65;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+}
+.foto-cinta {
+  display: flex;
+  gap: 6px;
+  margin-top: 26px;
+}
+.cinta {
+  height: 5px;
+  border-radius: 3px;
+}
+.cinta.amarilla {
+  width: 46px;
+  background: var(--amarillo);
+}
+.cinta.azul {
+  width: 22px;
+  background: var(--azul-claro);
+}
+.cinta.roja {
+  width: 22px;
+  background: var(--rojo);
+}
+
+/* ══ LADO DEL FORMULARIO ══ */
+.split-form {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 32px 24px;
+  background: #eef1f6;
 }
-
-.login-card {
-  background: rgba(255, 255, 255, 0.97);
-  border-radius: 12px;
-  box-shadow: 0 8px 40px rgba(11, 34, 82, 0.15);
-  padding: 36px 32px;
+.form-inner {
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  animation: fadeUp 0.4s ease both;
+  max-width: 400px;
 }
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
+.form-logo {
+  display: block;
+  height: 58px;
+  margin: 0 auto 22px;
+  object-fit: contain;
 }
-
-.login-icon {
-  font-size: 36px;
-  text-align: center;
+.form-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 30px 28px;
+  box-shadow: 0 10px 40px rgba(11, 34, 82, 0.1);
 }
-
-.login-titulo {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 20px;
+.saludo-ico {
+  font-size: 26px;
+  margin-bottom: 6px;
+}
+.saludo {
+  font-family: "Montserrat", sans-serif;
+  font-size: 21px;
   font-weight: 800;
   color: var(--azul-nav);
-  text-align: center;
-  margin: 0;
+  margin: 0 0 5px;
 }
-
-.login-sub {
-  font-size: 12.5px;
+.saludo-sub {
+  font-size: 13px;
   color: var(--gris-txt);
-  text-align: center;
-  line-height: 1.6;
-  margin: 0;
+  margin: 0 0 22px;
 }
 
 .field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  margin-bottom: 15px;
 }
-
 .field label {
-  font-size: 10.5px;
+  display: block;
+  font-size: 11.5px;
   font-weight: 700;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
   color: var(--gris-txt);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 6px;
 }
-
 .field input {
-  font-family: 'Open Sans', sans-serif;
+  width: 100%;
+  font-family: inherit;
   font-size: 14px;
   color: var(--tinta);
   background: var(--gris-bg);
   border: 1.5px solid var(--gris-bd);
   border-radius: 8px;
-  padding: 10px 13px;
+  padding: 12px 14px;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
-
 .field input:focus {
   border-color: var(--azul-claro);
   background: #fff;
   box-shadow: 0 0 0 3px rgba(30, 107, 184, 0.15);
 }
-
 .pass-wrap {
   position: relative;
 }
-
 .pass-wrap input {
-  padding-right: 42px;
+  padding-right: 46px;
 }
-
 .btn-eye {
   position: absolute;
-  right: 10px;
+  right: 6px;
   top: 50%;
   transform: translateY(-50%);
-  background: none;
   border: none;
+  background: none;
+  font-size: 15px;
+  padding: 6px 8px;
   cursor: pointer;
-  font-size: 16px;
-  opacity: 0.5;
-  transition: opacity 0.2s;
-  padding: 0;
+  opacity: 0.55;
+}
+.btn-eye:hover {
+  opacity: 1;
 }
 
-.btn-eye:hover { opacity: 1; }
-
+/* El error se reserva su espacio solo cuando aparece, para que el
+   botón no salte hacia abajo al mostrarse */
 .login-error {
+  display: none;
   font-size: 12.5px;
   color: var(--error);
-  background: #fff5f5;
-  border: 1px solid #f5c6c6;
-  border-radius: 6px;
-  padding: 8px 12px;
-  display: none;
-  text-align: center;
+  background: #fdecea;
+  border: 1.5px solid #f5c6c0;
+  border-radius: 7px;
+  padding: 9px 12px;
+  margin-bottom: 14px;
 }
-
-.login-error.show { display: block; }
+.login-error.show {
+  display: block;
+}
 
 .btn-login {
   width: 100%;
-  font-family: 'Montserrat', sans-serif;
+  position: relative;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  padding: 13px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: #fff;
+  background: var(--azul-boton);
   border: none;
   border-radius: 8px;
-  background: linear-gradient(135deg, var(--azul-nav), var(--azul-boton));
-  color: #fff;
+  padding: 14px;
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 18px rgba(13, 44, 110, 0.25);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 4px;
+  margin-top: 6px;
+  transition: background 0.2s, transform 0.1s;
 }
-
-.btn-login:hover {
-  background: linear-gradient(135deg, var(--azul-boton), var(--teal));
-  box-shadow: 0 6px 22px rgba(13, 44, 110, 0.35);
+.btn-login:hover:not(:disabled) {
+  background: var(--azul-nav);
 }
-
+.btn-login:active:not(:disabled) {
+  transform: translateY(1px);
+}
 .btn-login:disabled {
-  opacity: 0.7;
-  pointer-events: none;
+  cursor: not-allowed;
+  opacity: 0.75;
 }
-
+.btn-login.loading .btn-login-txt {
+  visibility: hidden;
+}
 .login-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2.5px solid rgba(255,255,255,0.3);
+  display: none;
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 255, 255, 0.35);
   border-top-color: #fff;
   border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-  display: none;
+  animation: girar 0.7s linear infinite;
+}
+.btn-login.loading .login-spinner {
+  display: block;
+}
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.btn-login.loading .login-spinner { display: block; }
-.btn-login.loading .btn-login-txt { display: none; }
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.form-nota {
+  font-size: 11.5px;
+  color: var(--gris-txt);
+  line-height: 1.55;
+  margin: 18px 0 0;
+  padding-top: 15px;
+  border-top: 1px solid var(--gris-bd);
 }
 
-@media (max-width: 480px) {
-  .login-card { padding: 28px 20px; }
+.form-pie {
+  text-align: center;
+  margin-top: 22px;
+  font-size: 11px;
+  color: var(--gris-txt);
+  line-height: 1.6;
+}
+.pie-org {
+  font-weight: 700;
+  color: var(--azul-nav);
+  font-size: 11.5px;
+}
+.pie-dir img {
+  width: 10px;
+  vertical-align: -1px;
+  opacity: 0.6;
+  margin-right: 3px;
+}
+.pie-ver {
+  margin-top: 5px;
+  letter-spacing: 0.5px;
+}
+
+/* ══ PANTALLAS ANGOSTAS ══
+   La foto pasa de columna a franja superior: en un celular, media
+   pantalla de imagen dejaría el formulario fuera de vista. */
+@media (max-width: 900px) {
+  .split {
+    grid-template-columns: 1fr;
+    min-height: 100%;
+  }
+  .split-foto {
+    min-height: 210px;
+  }
+  .foto-texto {
+    padding: 22px 24px 24px;
+  }
+  .foto-texto p,
+  .foto-cinta {
+    display: none;
+  }
+  .foto-diagonal {
+    display: none;
+  }
 }

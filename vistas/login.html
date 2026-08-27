@@ -5,123 +5,97 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/x-icon" href="/img/icono.png" />
     <title>Acceso Administrativo · PTFT38 | Registraduría Caquetá</title>
-    <link rel="stylesheet" href="/css/styles.css" />
     <link rel="stylesheet" href="/css/login.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@300;400;500;600&display=swap"
       rel="stylesheet"
     />
   </head>
-  <body>
-    <!-- BARRA SUPERIOR -->
-    <div class="top-bar" style="width: 100%">
-      <div class="top-bar-inner">
-        <span class="top-bar-left">República de Colombia · Organización Electoral</span>
-        <div class="top-bar-right">
-          <span>Acceso Administrativo</span>
-          <span class="top-bar-badge admin">Admin</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- HEADER -->
-    <div class="header" style="width: 100%">
-      <div class="header-main">
-        <div class="logo-wrap">
-          <img src="/img/Logo 2.jpg" alt="Registraduría" />
-        </div>
-        <div class="header-text-group">
-          <div class="org-name">Registraduría Nacional del Estado Civil</div>
-          <div class="header-titulo">
-            Panel Administrativo <span>PTFT38</span>
-          </div>
-          <div class="header-subtitulo">
-            Permanencia del Talento Humano · Delegación Departamental Caquetá
+  <body class="login-body">
+    <div class="split">
+      <!-- ── Lado visual ── -->
+      <section class="split-foto" aria-hidden="true">
+        <div class="foto-velo"></div>
+        <div class="foto-diagonal"></div>
+        <div class="foto-texto">
+          <div class="foto-kicker">República de Colombia · Organización Electoral</div>
+          <h1>Permanencia del<br />Talento Humano</h1>
+          <p>
+            Registro de asistencia y gestión de accesos<br />
+            de la Delegación Departamental del Caquetá.
+          </p>
+          <div class="foto-cinta">
+            <span class="cinta amarilla"></span>
+            <span class="cinta azul"></span>
+            <span class="cinta roja"></span>
           </div>
         </div>
-        <div class="ptft-badge">
-          <span class="ptft-code">PTFT38</span>
-          <span class="ptft-ver">Versión 5</span>
-        </div>
-      </div>
-    </div>
+      </section>
 
-    <!-- LOGIN CARD -->
-    <div class="login-wrap">
-      <div class="login-card">
-        <div class="login-icon">🔐</div>
-        <h2 class="login-titulo">Acceso restringido</h2>
-        <p class="login-sub">Ingrese sus credenciales para acceder al panel de administración.</p>
+      <!-- ── Lado del formulario ── -->
+      <section class="split-form">
+        <div class="form-inner">
+          <img class="form-logo" src="/img/Logo 2.jpg" alt="Registraduría Nacional del Estado Civil" />
 
-        <div class="field">
-          <label>Correo electrónico</label>
-          <input
-            type="email"
-            id="loginEmail"
-            placeholder="correo@registraduria.gov.co"
-            autocomplete="off"
-          />
-        </div>
+          <div class="form-card">
+            <div class="saludo-ico">🔐</div>
+            <h2 class="saludo">Acceso restringido</h2>
+            <p class="saludo-sub">Escriba sus datos para ingresar al panel.</p>
 
-        <div class="field">
-          <label>Contraseña</label>
-          <div class="pass-wrap">
-            <input
-              type="password"
-              id="loginPass"
-              placeholder="••••••••"
-              autocomplete="off"
-            />
-            <button class="btn-eye" id="btnEye" type="button" onclick="togglePass()">👁</button>
+            <div class="field">
+              <label for="loginEmail">Correo electrónico</label>
+              <input
+                type="email"
+                id="loginEmail"
+                placeholder="correo@registraduria.gov.co"
+                autocomplete="username"
+              />
+            </div>
+
+            <div class="field">
+              <label for="loginPass">Contraseña</label>
+              <div class="pass-wrap">
+                <input
+                  type="password"
+                  id="loginPass"
+                  placeholder="••••••••"
+                  autocomplete="current-password"
+                />
+                <button
+                  class="btn-eye"
+                  id="btnEye"
+                  type="button"
+                  onclick="togglePass()"
+                  aria-label="Mostrar u ocultar la contraseña"
+                >
+                  👁
+                </button>
+              </div>
+            </div>
+
+            <div class="login-error" id="loginError"></div>
+
+            <button class="btn-login" id="btnLogin" onclick="iniciarSesion()">
+              <span class="btn-login-txt">Ingresar al panel</span>
+              <div class="login-spinner"></div>
+            </button>
+
+            <p class="form-nota">
+              Este panel es de uso exclusivo del administrador. Los registradores
+              solo necesitan el enlace del formulario.
+            </p>
+          </div>
+
+          <div class="form-pie">
+            <div class="pie-org">Delegación Departamental Caquetá</div>
+            <div class="pie-dir">
+              <img src="/img/ico-footer-location.svg" alt="" />
+              Calle 15 N.° 15-20 Piso 2, Florencia – Caquetá · CP 180001
+            </div>
+            <div class="pie-ver">PTFT38 · Versión 5 · 2026</div>
           </div>
         </div>
-
-        <div class="login-error" id="loginError"></div>
-
-        <button class="btn-login" id="btnLogin" onclick="iniciarSesion()">
-          <span class="btn-login-txt">Ingresar al panel</span>
-          <div class="login-spinner"></div>
-        </button>
-      </div>
-    </div>
-
-    <!-- FOOTER -->
-    <div class="page-footer">
-      <div class="footer-teal-bar"></div>
-      <div class="footer-body">
-        <img class="footer-logo" src="/img/Logo 2.jpg" alt="Registraduría" />
-        <div class="footer-divider"></div>
-        <div class="footer-info">
-          <div class="footer-org">Registraduría Nacional del Estado Civil</div>
-          <div class="footer-sub">
-            Delegación Departamental Caquetá<br />
-            <span class="footer-dir">
-              <img src="/img/ico-footer-location.svg" alt="Ubicación" class="footer-dir-ico" />
-              Calle 15 N°. 15-20 Piso 2, Florencia – Caquetá &nbsp;CP: 180001
-            </span>
-          </div>
-        </div>
-        <div class="footer-right-block">
-          <div class="footer-ptft">PTFT38</div>
-          <div class="footer-ver">Versión 5 · 2026</div>
-          <div class="e26-dots">
-            <div class="e26-dot" style="background: var(--e26-amarillo)"></div>
-            <div class="e26-dot" style="background: var(--e26-azul)"></div>
-            <div class="e26-dot" style="background: var(--e26-rojo)"></div>
-          </div>
-        </div>
-      </div>
-      <div class="footer-social">
-        <a href="https://www.facebook.com/Registraduria" target="_blank" rel="noopener"><img src="/img/ico-footer-facebook.svg" alt="Facebook" /></a>
-        <a href="https://twitter.com/Registraduria" target="_blank" rel="noopener"><img src="/img/ico-footer-X.svg" alt="X" /></a>
-        <a href="https://www.youtube.com/@RegistraduriaCol" target="_blank" rel="noopener"><img src="/img/ico-footer-youtube.svg" alt="YouTube" /></a>
-        <a href="https://www.instagram.com/registraduria" target="_blank" rel="noopener"><img src="/img/ico-footer-instagram.svg" alt="Instagram" /></a>
-        <a href="https://www.linkedin.com/company/registraduria" target="_blank" rel="noopener"><img src="/img/ico-footer-linkedin.svg" alt="LinkedIn" /></a>
-        <a href="https://www.tiktok.com/@registraduria" target="_blank" rel="noopener"><img src="/img/ico-footer-tiktok.png" alt="TikTok" /></a>
-      </div>
-      <div class="footer-bottom">
-        Copyright 2026 © – Registraduría Nacional del Estado Civil.
-      </div>
+      </section>
     </div>
 
     <script type="module" src="/js/login.js"></script>
