@@ -7,7 +7,7 @@
       "**/node_modules/**",
       "Formato Usuarios/**",
       "Python/**",
-      "vistas/demo-tablero.html"
+      "vistas/demo-*.html"
     ],
     "headers": [
       {

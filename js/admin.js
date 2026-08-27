@@ -251,11 +251,192 @@ window.eliminarEvento = async function (evId) {
 };
 
 /* ══════════════════════════════════════════
+   CONVOCADOS
+
+   Sin saber a quién se convocó, la lista de asistencia solo puede decir
+   quién llegó, nunca quién faltó. Aquí se carga ese universo.
+══════════════════════════════════════════ */
+
+/* Interpreta la lista pegada. La gente copia de Excel, de Word o de un
+   correo, asi que llega con numeracion, tabulaciones, guiones, puntos de
+   miles o la cedula al final. La regla es simple: en cada linea, el
+   numero mas largo es la cedula y el resto es el nombre. */
+function leerConvocados(texto) {
+  const vistas = new Set();
+  const personas = [];
+  const descartadas = [];
+
+  (texto || "").split(/\r?\n/).forEach((lineaCruda) => {
+    const linea = lineaCruda.trim();
+    if (!linea) return;
+
+    // Quitar la numeracion de lista ("1.", "12)") para que no se
+    // confunda con una cedula corta
+    const limpia = linea.replace(/^\s*\d{1,3}\s*[.)-]\s+/, "");
+
+    // Los numeros pueden venir con puntos o comas de miles
+    const numeros = (limpia.match(/[\d][\d.,]*/g) || [])
+      .map((n) => n.replace(/[.,]/g, ""))
+      .filter((n) => n.length >= 4 && n.length <= 12);
+
+    if (!numeros.length) {
+      descartadas.push(linea);
+      return;
+    }
+    const cedula = numeros.sort((a, b) => b.length - a.length)[0];
+
+    const nombre = limpia
+      .replace(/[\d][\d.,]*/g, " ")
+      .replace(/[;|\t]+/g, " ")
+      .replace(/\s{2,}/g, " ")
+      .replace(/^[\s,.\-–]+|[\s,.\-–]+$/g, "")
+      .trim();
+
+    // Una misma persona repetida en la lista no puede contar dos veces:
+    // inflaria el universo y bajaria la asistencia artificialmente
+    if (vistas.has(cedula)) return;
+    vistas.add(cedula);
+    personas.push({ cedula, nombre: nombre || "(sin nombre)" });
+  });
+
+  return { personas, descartadas };
+}
+
+/* Cruza convocados contra asistentes. La cedula es la llave: el nombre
+   se escribe distinto cada vez (con tildes, abreviado, invertido). */
+function cruzarAsistencia(convocados, registros) {
+  const asistieron = new Set((registros || []).map((r) => String(r.cedula).trim()));
+  const faltaron = (convocados || []).filter((c) => !asistieron.has(c.cedula));
+  const convocadosSet = new Set((convocados || []).map((c) => c.cedula));
+  // Quien asistio sin estar convocado no es un error: pasa que llega
+  // gente de mas. Se cuenta aparte para no ensuciar el porcentaje.
+  const noConvocados = (registros || []).filter(
+    (r) => !convocadosSet.has(String(r.cedula).trim()),
+  );
+  return { faltaron, noConvocados };
+}
+
+window.abrirConvocados = function (evId, nombre) {
+  window._convEvId = evId;
+  document.getElementById("convEvento").textContent = nombre;
+  const lista = window._convocadosPorEvento?.[evId] || [];
+  document.getElementById("convTexto").value = lista
+    .map((c) => `${c.cedula} ${c.nombre}`)
+    .join("\n");
+  window.previsualizarConvocados();
+  document.getElementById("modalConvocados").classList.add("show");
+};
+
+window.cerrarModalConvocados = function () {
+  document.getElementById("modalConvocados").classList.remove("show");
+};
+
+/* Mostrar en vivo qué se entendió: pegar una lista y guardarla a ciegas
+   es la forma segura de meter basura sin enterarse. */
+window.previsualizarConvocados = function () {
+  const { personas, descartadas } = leerConvocados(
+    document.getElementById("convTexto").value,
+  );
+  const caja = document.getElementById("convResumen");
+
+  if (!personas.length && !descartadas.length) {
+    caja.className = "conv-resumen";
+    caja.textContent = "Aún no ha pegado ninguna lista.";
+    return;
+  }
+
+  const aviso = descartadas.length
+    ? `<div class="conv-aviso">${descartadas.length} línea(s) sin cédula reconocible, se van a ignorar:
+       <em>${descartadas.slice(0, 3).map((l) => l.slice(0, 40)).join(" · ")}</em></div>`
+    : "";
+
+  caja.className = "conv-resumen con-datos";
+  caja.innerHTML =
+    `<strong>${personas.length}</strong> convocado(s) reconocido(s).` +
+    `<div class="conv-muestra">${personas
+      .slice(0, 4)
+      .map((p) => `${p.cedula} · ${p.nombre}`)
+      .join("<br>")}${personas.length > 4 ? "<br>…" : ""}</div>` +
+    aviso;
+};
+
+window.guardarConvocados = async function () {
+  const evId = window._convEvId;
+  const { personas } = leerConvocados(document.getElementById("convTexto").value);
+
+  if (!personas.length && !confirm("La lista quedó vacía. ¿Quitar los convocados de este evento?")) {
+    return;
+  }
+
+  try {
+    await updateDoc(doc(db, COL_EVENTOS, evId), { convocados: personas });
+    window._convocadosPorEvento[evId] = personas;
+
+    // Si el panel de registros está mostrando este mismo evento, tenía
+    // la lista vieja en memoria: se actualiza y se repinta
+    if (window._evActual && document.getElementById("regSelector")?.value === evId) {
+      window._evActual.convocados = personas;
+      pintarInasistencia(window._evActual, window._regActuales || []);
+    }
+
+    window.cerrarModalConvocados();
+    renderEventos();
+  } catch (err) {
+    console.error("Error guardando convocados:", err);
+    alert("No se pudo guardar la lista. Revise la consola.");
+  }
+};
+
+/* ══════════════════════════════════════════
    ELIMINAR UN REGISTRO DE ASISTENCIA
 
    Pasa que alguien se registra en broma o escribe mal sus datos, y el
    listado es el soporte oficial del evento: debe poder corregirse.
 ══════════════════════════════════════════ */
+/* Pinta la asistencia frente a lo convocado. Si el evento no tiene lista
+   cargada no se inventa nada: el panel simplemente no aparece. */
+function pintarInasistencia(ev, registros) {
+  const panel = document.getElementById("panelInasistencia");
+  const convocados = ev?.convocados || [];
+
+  if (!convocados.length) {
+    panel.style.display = "none";
+    return;
+  }
+  panel.style.display = "block";
+
+  const { faltaron, noConvocados } = cruzarAsistencia(convocados, registros);
+  const asistieron = convocados.length - faltaron.length;
+  const pct = Math.round((asistieron / convocados.length) * 100);
+
+  document.getElementById("asisPorcentaje").textContent = `${pct}%`;
+  document.getElementById("asisLlena").style.width = `${pct}%`;
+  document.getElementById("asisDetalle").innerHTML =
+    `Asistieron <strong>${asistieron}</strong> de <strong>${convocados.length}</strong> convocados` +
+    (faltaron.length ? ` · faltaron <strong>${faltaron.length}</strong>` : "");
+
+  const caja = document.getElementById("faltantesCaja");
+  caja.style.display = faltaron.length ? "block" : "none";
+  document.getElementById("faltantesTitulo").textContent =
+    `Faltaron ${faltaron.length}`;
+  document.getElementById("faltantesLista").innerHTML = faltaron
+    .map((f) => `<div class="falt-item"><span>${f.nombre}</span><small>C.C. ${f.cedula}</small></div>`)
+    .join("");
+
+  // Quien llega sin estar convocado se avisa aparte: no baja el
+  // porcentaje, pero conviene saber que la lista quedo corta
+  const extras = document.getElementById("extrasAviso");
+  if (noConvocados.length) {
+    extras.style.display = "block";
+    extras.innerHTML =
+      `<strong>${noConvocados.length}</strong> asistente(s) no estaban en la lista de convocados: ` +
+      noConvocados.map((r) => r.nombre).slice(0, 5).join(", ") +
+      (noConvocados.length > 5 ? "…" : "");
+  } else {
+    extras.style.display = "none";
+  }
+}
+
 window.eliminarRegistro = async function (evId, regId) {
   // Buscamos el registro en lo que ya está en pantalla, para nombrar a
   // quién se va a borrar: confirmar sobre un "¿seguro?" a secas es como
@@ -401,10 +582,22 @@ async function renderEventos() {
       }),
     );
 
+    // Guardar los convocados para poder reabrir el modal sin releer
+    window._convocadosPorEvento = {};
+    items.forEach(({ ev }) => {
+      window._convocadosPorEvento[ev.id] = ev.convocados || [];
+    });
+
     list.innerHTML = items
       .map(({ ev, count }) => {
         const lnk = generarLink(ev.id);
         const cerrado = !!ev.cerrado;
+        const convocados = ev.convocados || [];
+        // Con lista cargada el contador deja de ser un numero suelto y
+        // pasa a decir cuanto falta del total convocado
+        const conteo = convocados.length
+          ? `${count}/${convocados.length} · ${Math.round((count / convocados.length) * 100)}%`
+          : `${count} reg.`;
         return `
       <div class="ev-item ${cerrado ? "cerrado" : ""}">
         <div class="ev-item-top">
@@ -414,7 +607,10 @@ async function renderEventos() {
             <div class="ev-item-meta">${[ev.fecha, ev.jornada, ev.institucion].filter(Boolean).join(" · ")}</div>
           </div>
           <div class="ev-item-actions">
-            <span class="ev-count ${count === 0 ? "cero" : ""}">${count} reg.</span>
+            <span class="ev-count ${count === 0 ? "cero" : ""}" title="${convocados.length ? `${count} de ${convocados.length} convocados` : "Registros de asistencia"}">${conteo}</span>
+            <button class="btn-convocados ${convocados.length ? "con-lista" : ""}"
+              title="Cargar o editar la lista de convocados"
+              onclick="abrirConvocados('${ev.id}','${(ev.nombre || "").replace(/'/g, "\\'")}')">👥 Convocados</button>
             <button class="btn-qr" onclick="verQR('${ev.id}','${(ev.nombre || "").replace(/'/g, "\\'")}')">▦ Código QR</button>
             <button class="btn-cerrar ${cerrado ? "reabrir" : ""}" onclick="toggleCerrarEvento('${ev.id}', ${cerrado})">
               ${cerrado ? "🔓 Reabrir" : "🔒 Cerrar"}
@@ -517,6 +713,8 @@ window.cargarRegistros = async function () {
           tabla.innerHTML =
             '<tr><td colspan="9" class="sin-datos">Sin registros en este evento.<br><small>Esta tabla se actualiza sola cuando alguien se registre.</small></td></tr>';
           window._regActuales = [];
+          // Que no haya llegado nadie es precisamente lo que hay que ver
+          pintarInasistencia(ev, []);
           return;
         }
 
@@ -547,6 +745,7 @@ window.cargarRegistros = async function () {
 
         // Guardar para exportar (siempre actualizado)
         window._regActuales = regs.docs.map((d) => ({ id: d.id, ...d.data() }));
+        pintarInasistencia(ev, window._regActuales);
       },
       (err) => {
         console.error("Error en tiempo real:", err);

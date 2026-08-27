@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Muestra · Convocados e inasistencia</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="stylesheet" href="../css/admin.css" />
+    <style>
+      body { background: #eef1f6; }
+      .demo-wrap { max-width: 940px; margin: 24px auto; padding: 0 16px; }
+      .demo-card { background: #fff; border-radius: 10px; padding: 20px 22px; margin-bottom: 18px; }
+      .demo-aviso {
+        font-size: 12.5px; color: #92400e; background: #fffbeb;
+        border: 1.5px solid #fcd34d; border-radius: 6px;
+        padding: 10px 14px; margin-bottom: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="demo-wrap">
+      <p class="demo-aviso">
+        <strong>Página de muestra</strong> con datos inventados, solo para revisar
+        el diseño de los convocados y la inasistencia.
+      </p>
+
+      <div class="demo-card">
+        <div class="section-title">Barra de asistencia</div>
+        <div id="panelInasistencia">
+          <div class="asis-barra">
+            <div class="asis-cifra">
+              <b id="asisPorcentaje">—</b>
+              <span>de asistencia</span>
+            </div>
+            <div class="asis-pista"><span class="asis-llena" id="asisLlena"></span></div>
+            <div class="asis-detalle" id="asisDetalle">—</div>
+          </div>
+          <details class="faltantes-caja" id="faltantesCaja" open>
+            <summary>
+              <span id="faltantesTitulo">Faltaron</span>
+              <span class="faltantes-hint">clic para ver la lista</span>
+            </summary>
+            <div class="faltantes-lista" id="faltantesLista"></div>
+          </details>
+          <div class="extras-aviso" id="extrasAviso" style="display: none"></div>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <div class="section-title">Botones del evento</div>
+        <div class="ev-item-actions" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
+          <span class="ev-count">11/16 · 69%</span>
+          <button class="btn-convocados con-lista">👥 Convocados</button>
+          <button class="btn-convocados">👥 Convocados</button>
+          <button class="btn-qr">▦ Código QR</button>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <div class="section-title">Modal de carga (mostrado en línea)</div>
+        <div class="modal-box modal-ancho" style="position: static; transform: none">
+          <h3>Lista de convocados</h3>
+          <div class="conv-evento" id="convEvento">CAPACITACIÓN SIRC · 25/8/2026</div>
+          <p class="conv-ayuda">
+            Pegue aquí la lista de quienes fueron convocados: una persona por
+            línea, con la cédula primero. Sirve copiar y pegar desde Excel o Word.
+          </p>
+          <textarea id="convTexto" rows="7" spellcheck="false" oninput="previsualizar()"></textarea>
+          <div class="conv-resumen" id="convResumen">Aún no ha pegado ninguna lista.</div>
+          <div class="conv-acciones">
+            <button class="btn-verde">Guardar lista</button>
+            <button class="modal-close">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      // Se reusa el mismo código del panel, extraído a mano para la muestra
+      const CONVOCADOS = [
+        ["1015555555", "JUAN CAMILO POLANCO VASQUEZ"],
+        ["40771154", "LILIANA CERQUERA SOTO"],
+        ["17638546", "LÍDER ANTONIO FAJARDO BARRERA"],
+        ["1119214613", "DULLY MILENA ARTUNDUAGA MEJIA"],
+        ["1006955635", "MARLEN YADIRA ROJAS BENAVIDES"],
+        ["40775062", "NUBIA SUÁREZ MARÍN"],
+        ["40089095", "ROSA ELVIRA DIAZ"],
+        ["6802313", "EDWIN JAVIER RAMIREZ ROJAS"],
+      ].map(([cedula, nombre]) => ({ cedula, nombre }));
+
+      // Llegaron 5 de los 8, y un colado que no estaba convocado
+      const REGISTROS = [
+        { cedula: "1015555555", nombre: "JUAN CAMILO POLANCO VASQUEZ" },
+        { cedula: "40771154", nombre: "LILIANA CERQUERA SOTO" },
+        { cedula: "17638546", nombre: "LÍDER ANTONIO FAJARDO BARRERA" },
+        { cedula: "40089095", nombre: "ROSA ELVIRA DIAZ" },
+        { cedula: "6802313", nombre: "EDWIN JAVIER RAMIREZ ROJAS" },
+        { cedula: "9999999", nombre: "PABLO LIMA LOPEZ" },
+      ];
+
+      const asistieronSet = new Set(REGISTROS.map((r) => String(r.cedula).trim()));
+      const faltaron = CONVOCADOS.filter((c) => !asistieronSet.has(c.cedula));
+      const convSet = new Set(CONVOCADOS.map((c) => c.cedula));
+      const noConvocados = REGISTROS.filter((r) => !convSet.has(String(r.cedula).trim()));
+
+      const asistieron = CONVOCADOS.length - faltaron.length;
+      const pct = Math.round((asistieron / CONVOCADOS.length) * 100);
+
+      document.getElementById("asisPorcentaje").textContent = pct + "%";
+      document.getElementById("asisLlena").style.width = pct + "%";
+      document.getElementById("asisDetalle").innerHTML =
+        `Asistieron <strong>${asistieron}</strong> de <strong>${CONVOCADOS.length}</strong> convocados · faltaron <strong>${faltaron.length}</strong>`;
+      document.getElementById("faltantesTitulo").textContent = `Faltaron ${faltaron.length}`;
+      document.getElementById("faltantesLista").innerHTML = faltaron
+        .map((f) => `<div class="falt-item"><span>${f.nombre}</span><small>C.C. ${f.cedula}</small></div>`)
+        .join("");
+      const extras = document.getElementById("extrasAviso");
+      extras.style.display = "block";
+      extras.innerHTML =
+        `<strong>${noConvocados.length}</strong> asistente(s) no estaban en la lista de convocados: ` +
+        noConvocados.map((r) => r.nombre).join(", ");
+
+      // Previsualización del pegado
+      window.previsualizar = function () {
+        const texto = document.getElementById("convTexto").value;
+        const vistas = new Set();
+        const personas = [];
+        const descartadas = [];
+        texto.split(/\r?\n/).forEach((cruda) => {
+          const linea = cruda.trim();
+          if (!linea) return;
+          const limpia = linea.replace(/^\s*\d{1,3}\s*[.)-]\s+/, "");
+          const nums = (limpia.match(/[\d][\d.,]*/g) || [])
+            .map((n) => n.replace(/[.,]/g, ""))
+            .filter((n) => n.length >= 4 && n.length <= 12);
+          if (!nums.length) return descartadas.push(linea);
+          const cedula = nums.sort((a, b) => b.length - a.length)[0];
+          const nombre = limpia
+            .replace(/[\d][\d.,]*/g, " ").replace(/[;|\t]+/g, " ")
+            .replace(/\s{2,}/g, " ").replace(/^[\s,.\-–]+|[\s,.\-–]+$/g, "").trim();
+          if (vistas.has(cedula)) return;
+          vistas.add(cedula);
+          personas.push({ cedula, nombre: nombre || "(sin nombre)" });
+        });
+        const caja = document.getElementById("convResumen");
+        if (!personas.length && !descartadas.length) {
+          caja.className = "conv-resumen";
+          caja.textContent = "Aún no ha pegado ninguna lista.";
+          return;
+        }
+        const aviso = descartadas.length
+          ? `<div class="conv-aviso">${descartadas.length} línea(s) sin cédula reconocible, se van a ignorar:
+             <em>${descartadas.slice(0, 3).map((l) => l.slice(0, 40)).join(" · ")}</em></div>` : "";
+        caja.className = "conv-resumen con-datos";
+        caja.innerHTML =
+          `<strong>${personas.length}</strong> convocado(s) reconocido(s).` +
+          `<div class="conv-muestra">${personas.slice(0, 4).map((p) => `${p.cedula} · ${p.nombre}`).join("<br>")}${personas.length > 4 ? "<br>…" : ""}</div>` + aviso;
+      };
+
+      document.getElementById("convTexto").value =
+        "LISTADO DE CONVOCADOS\n1. 1015555555 JUAN CAMILO POLANCO\n2. 40.771.154 LILIANA CERQUERA SOTO\n17638546\tLÍDER ANTONIO FAJARDO\nCAPACITACION SIRC";
+      previsualizar();
+    </script>
+  </body>
+</html>

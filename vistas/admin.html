@@ -259,6 +259,29 @@
               </select>
             </div>
           </div>
+          <!-- Asistencia frente a lo convocado. Solo aparece cuando el
+               evento tiene lista de convocados cargada. -->
+          <div id="panelInasistencia" style="display: none">
+            <div class="asis-barra">
+              <div class="asis-cifra">
+                <b id="asisPorcentaje">—</b>
+                <span>de asistencia</span>
+              </div>
+              <div class="asis-pista">
+                <span class="asis-llena" id="asisLlena"></span>
+              </div>
+              <div class="asis-detalle" id="asisDetalle">—</div>
+            </div>
+            <details class="faltantes-caja" id="faltantesCaja">
+              <summary>
+                <span id="faltantesTitulo">Faltaron</span>
+                <span class="faltantes-hint">clic para ver la lista</span>
+              </summary>
+              <div class="faltantes-lista" id="faltantesLista"></div>
+            </details>
+            <div class="extras-aviso" id="extrasAviso" style="display: none"></div>
+          </div>
+
           <div class="reg-table-wrap">
             <table>
               <thead>
@@ -453,6 +476,44 @@
       </div>
     </div>
     <!-- /card -->
+
+    <!-- MODAL CONVOCADOS -->
+    <div
+      class="modal-overlay"
+      id="modalConvocados"
+      onclick="window.cerrarModalConvocados()"
+    >
+      <div
+        class="modal-box modal-ancho"
+        onclick="event.stopPropagation()"
+      >
+        <h3>Lista de convocados</h3>
+        <div class="conv-evento" id="convEvento">—</div>
+        <p class="conv-ayuda">
+          Pegue aquí la lista de quienes fueron convocados: una persona por
+          línea, con la cédula primero. Sirve copiar y pegar desde Excel o
+          Word.
+        </p>
+        <textarea
+          id="convTexto"
+          rows="9"
+          spellcheck="false"
+          oninput="window.previsualizarConvocados()"
+          placeholder="1015555555 JUAN PÉREZ GÓMEZ&#10;40771154 LILIANA CERQUERA SOTO&#10;17638546 LÍDER ANTONIO FAJARDO"
+        ></textarea>
+        <div class="conv-resumen" id="convResumen">
+          Aún no ha pegado ninguna lista.
+        </div>
+        <div class="conv-acciones">
+          <button class="btn-verde" onclick="window.guardarConvocados()">
+            Guardar lista
+          </button>
+          <button class="modal-close" onclick="window.cerrarModalConvocados()">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- MODAL -->
     <div class="modal-overlay" id="modalFirma" onclick="window.cerrarModal()">
