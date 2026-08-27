@@ -912,6 +912,31 @@ tbody td {
   flex-shrink: 0;
 }
 
+/* ── Cumplimiento de la convocatoria ── */
+.cump-resumen {
+  display: flex;
+  flex-direction: column;
+}
+.cump-cifra b {
+  font-family: "Montserrat", sans-serif;
+  font-size: 44px;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--gr-azul);
+}
+/* La nota va pegada a la cifra: un porcentaje sin decir sobre qué se
+   calculó es justo lo que hay que evitar */
+.cump-resumen .graf-nota {
+  margin: 10px 0 0;
+  line-height: 1.5;
+}
+.graf-pie {
+  font-size: 11px;
+  color: var(--gris-txt);
+  margin: 10px 0 0;
+  line-height: 1.45;
+}
+
 /* ── Cobertura por municipio ── */
 .cobertura-chips {
   display: flex;

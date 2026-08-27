@@ -388,6 +388,27 @@
             </div>
           </div>
 
+          <!-- Cumplimiento de la convocatoria. Solo aparece si hay
+               eventos con convocatoria cargada. -->
+          <div id="panelCumplimiento" style="display: none">
+            <div class="section-title">Cumplimiento de la convocatoria</div>
+            <div class="graf-grid">
+              <div class="graf-panel cump-resumen">
+                <h4 class="graf-titulo">Asistencia frente a lo citado</h4>
+                <div class="cump-cifra"><b id="cumpPorcentaje">—</b></div>
+                <p class="graf-nota" id="cumpNota">—</p>
+              </div>
+              <div class="graf-panel">
+                <h4 class="graf-titulo">Sedes que más faltan</h4>
+                <div id="grafInasistencia" class="graf-barras"></div>
+                <p class="graf-pie">
+                  Veces que la sede fue citada y no envió a nadie, sobre el
+                  total de veces que se le citó.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <!-- Cobertura territorial -->
           <div class="graf-panel" id="panelCobertura">
             <h4 class="graf-titulo">Cobertura en el departamento</h4>

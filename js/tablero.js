@@ -1,3 +1,5 @@
+import { sedeCorta } from "./sedes.js";
+
 /* ══════════════════════════════════════════
    tablero.js — Gráficos del tablero de estadísticas
 
@@ -124,6 +126,89 @@ function pintarCobertura(registros) {
   }).join("");
 }
 
+/* ── Cumplimiento de la convocatoria ──
+
+   Solo entran los eventos que tienen convocatoria cargada. Promediar
+   con los que no la tienen daría una cifra inventada: en esos no se
+   sabe cuánta gente debía llegar. */
+function pintarCumplimiento(eventos, registros) {
+  const panel = document.getElementById("panelCumplimiento");
+  if (!panel) return;
+
+  const conConvocatoria = eventos.filter(
+    (e) => (e.convocaSedes || []).length || (e.convocados || []).length,
+  );
+
+  if (!conConvocatoria.length) {
+    panel.style.display = "none";
+    return;
+  }
+  panel.style.display = "block";
+
+  // Cuántas veces se citó cada sede y cuántas respondió. Es el dato que
+  // permite decir "Solano faltó a 4 de 5 reuniones".
+  const citadas = {};
+  const respondieron = {};
+  let sumaPorcentajes = 0;
+
+  conConvocatoria.forEach((ev) => {
+    const delEvento = registros.filter((r) => r.eventoId === ev.id);
+    const sedes = ev.convocaSedes || [];
+
+    if (sedes.length) {
+      const presentes = new Set(delEvento.map((r) => (r.dependencia || "").trim()));
+      sedes.forEach((s) => {
+        citadas[s] = (citadas[s] || 0) + 1;
+        if (presentes.has(s)) respondieron[s] = (respondieron[s] || 0) + 1;
+      });
+      sumaPorcentajes += sedes.filter((s) => presentes.has(s)).length / sedes.length;
+    } else {
+      // Evento con lista nominal: aporta al promedio general, pero no
+      // al conteo por sede, porque ahí la unidad es la persona
+      const asistieron = new Set(delEvento.map((r) => String(r.cedula).trim()));
+      const total = ev.convocados.length;
+      sumaPorcentajes +=
+        ev.convocados.filter((c) => asistieron.has(c.cedula)).length / total;
+    }
+  });
+
+  const promedio = Math.round((sumaPorcentajes / conConvocatoria.length) * 100);
+  document.getElementById("cumpPorcentaje").textContent = `${promedio}%`;
+  document.getElementById("cumpNota").innerHTML =
+    `Promedio de cumplimiento sobre <strong>${conConvocatoria.length}</strong> ` +
+    `evento(s) con convocatoria cargada, de ${eventos.length} en total. ` +
+    `Los eventos sin convocatoria no entran en este cálculo.`;
+
+  // Ranking de inasistencia: la sede que más veces fue citada y no fue
+  const ranking = Object.keys(citadas)
+    .map((sede) => {
+      const veces = citadas[sede];
+      const fue = respondieron[sede] || 0;
+      return [sedeCorta(sede), veces - fue, sede, veces];
+    })
+    .filter(([, faltas]) => faltas > 0)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8);
+
+  const caja = document.getElementById("grafInasistencia");
+  if (!ranking.length) {
+    caja.innerHTML =
+      '<p class="graf-vacio">Todas las sedes citadas asistieron. Sin inasistencias.</p>';
+    return;
+  }
+  const mayor = ranking[0][1];
+  caja.innerHTML = ranking
+    .map(([corto, faltas, completo, veces]) => {
+      const ancho = Math.max(6, Math.round((faltas / mayor) * 100));
+      return `<div class="graf-fila" title="${completo}: faltó a ${faltas} de ${veces} convocatorias">
+        <span class="etq">${corto}</span>
+        <span class="pista"><span class="barra" style="width:${ancho}%;background:#c0392b"></span></span>
+        <span class="val">${faltas}/${veces}</span>
+      </div>`;
+    })
+    .join("");
+}
+
 /* Dibuja el tablero completo. `evId` vacío significa "todos los eventos". */
 export function pintarTablero(todosEventos, todosRegistros, evId) {
   const registros = evId
@@ -161,6 +246,7 @@ export function pintarTablero(todosEventos, todosRegistros, evId) {
   }
 
   pintarCobertura(registros);
+  pintarCumplimiento(eventos, registros);
 
   // ── Tablas de detalle (el valor exacto se lee mejor en tabla) ──
   const total = registros.length || 1;

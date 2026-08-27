@@ -96,6 +96,25 @@
           </div>
         </div>
 
+        <div id="panelCumplimiento" style="display: none">
+          <div class="section-title">Cumplimiento de la convocatoria</div>
+          <div class="graf-grid">
+            <div class="graf-panel cump-resumen">
+              <h4 class="graf-titulo">Asistencia frente a lo citado</h4>
+              <div class="cump-cifra"><b id="cumpPorcentaje">—</b></div>
+              <p class="graf-nota" id="cumpNota">—</p>
+            </div>
+            <div class="graf-panel">
+              <h4 class="graf-titulo">Sedes que más faltan</h4>
+              <div id="grafInasistencia" class="graf-barras"></div>
+              <p class="graf-pie">
+                Veces que la sede fue citada y no envió a nadie, sobre el total
+                de veces que se le citó.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div class="graf-panel" id="panelCobertura">
           <h4 class="graf-titulo">Cobertura en el departamento</h4>
           <p class="graf-nota" id="coberturaResumen">—</p>
@@ -119,9 +138,18 @@
     <script type="module">
       import { pintarTablero } from "../js/tablero.js";
 
+      // Dos de los tres eventos tienen convocatoria por sedes; el tercero
+      // no, para ver que el cálculo lo deja fuera y lo dice
+      const CITADAS = [
+        "Delegación Departamental",
+        "Registraduría Municipal de Solano",
+        "Registraduría Municipal de Curillo",
+        "Registraduría Municipal de Milán",
+        "Registraduría Municipal de El Doncello",
+      ];
       const EVENTOS = [
-        { id: "e1", nombre: "Jornada de Identificación Solano", fecha: "2026-03-12" },
-        { id: "e2", nombre: "Capacitación SIRC Florencia", fecha: "2026-04-08" },
+        { id: "e1", nombre: "Jornada de Identificación Solano", fecha: "2026-03-12", convocaSedes: CITADAS },
+        { id: "e2", nombre: "Capacitación SIRC Florencia", fecha: "2026-04-08", convocaSedes: CITADAS },
         { id: "e3", nombre: "Socialización El Doncello", fecha: "2026-05-20" },
       ];
 
@@ -129,9 +157,9 @@
       const CRUDOS = [
         ["e1", "Registraduría Municipal de Solano", "Masculino", "Técnico", 9],
         ["e1", "Registraduría Municipal de Solano", "Femenino", "Asistencial", 7],
-        ["e1", "Delegación Departamental Caquetá", "Femenino", "Profesional", 4],
-        ["e2", "Delegación Departamental Caquetá", "Masculino", "Profesional", 12],
-        ["e2", "Delegación Departamental Caquetá", "Femenino", "Técnico", 15],
+        ["e1", "Delegación Departamental", "Femenino", "Profesional", 4],
+        ["e2", "Delegación Departamental", "Masculino", "Profesional", 12],
+        ["e2", "Delegación Departamental", "Femenino", "Técnico", 15],
         ["e2", "Registraduría Municipal de Curillo", "Femenino", "Asistencial", 5],
         ["e2", "Registraduría Municipal de Milán", "Masculino", "Técnico", 3],
         ["e3", "Registraduría Municipal de El Doncello", "Femenino", "Directivo", 2],
