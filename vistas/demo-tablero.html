@@ -15,7 +15,7 @@
     <style>
       /* Solo para la muestra: encuadre sencillo, sin la barra del panel */
       body { background: #eef1f6; }
-      .demo-wrap { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+      .demo-wrap { max-width: 1400px; margin: 24px auto; padding: 0 16px; }
       .demo-aviso {
         font-size: 12.5px; color: #92400e; background: #fffbeb;
         border: 1.5px solid #fcd34d; border-radius: 6px;
@@ -121,17 +121,22 @@
           <div id="grafCobertura" class="cobertura-chips"></div>
         </div>
 
-        <div class="section-title">Detalle por dependencia</div>
-        <table class="tabla">
-          <thead><tr><th>Dependencia</th><th>Asistentes</th><th>%</th></tr></thead>
-          <tbody id="statDepTabla"></tbody>
-        </table>
-
-        <div class="section-title">Detalle por nivel del cargo</div>
-        <table class="tabla">
-          <thead><tr><th>Nivel</th><th>Asistentes</th><th>%</th></tr></thead>
-          <tbody id="statNivelTabla"></tbody>
-        </table>
+        <div class="tablas-duo">
+          <div>
+            <div class="section-title">Por dependencia</div>
+            <table class="tabla">
+              <thead><tr><th>Dependencia</th><th>Registros</th><th>%</th></tr></thead>
+              <tbody id="statDepTabla"></tbody>
+            </table>
+          </div>
+          <div>
+            <div class="section-title">Por nivel del cargo</div>
+            <table class="tabla">
+              <thead><tr><th>Nivel</th><th>Registros</th><th>%</th></tr></thead>
+              <tbody id="statNivelTabla"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
 

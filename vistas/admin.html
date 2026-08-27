@@ -416,39 +416,47 @@
             <div id="grafCobertura" class="cobertura-chips"></div>
           </div>
 
-          <div class="section-title">Por dependencia</div>
-          <div class="reg-table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Dependencia</th>
-                  <th>Registros</th>
-                  <th>%</th>
-                </tr>
-              </thead>
-              <tbody id="statDepTabla">
-                <tr>
-                  <td colspan="3" class="sin-datos">Cargando…</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="section-title">Por nivel del cargo</div>
-          <div class="reg-table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Nivel</th>
-                  <th>Registros</th>
-                  <th>%</th>
-                </tr>
-              </thead>
-              <tbody id="statNivelTabla">
-                <tr>
-                  <td colspan="3" class="sin-datos">Cargando…</td>
-                </tr>
-              </tbody>
-            </table>
+          <!-- Las dos tablas de detalle van lado a lado: son cortas y
+               aprovechan el ancho en vez de dejar media pantalla vacía -->
+          <div class="tablas-duo">
+            <div>
+              <div class="section-title">Por dependencia</div>
+              <div class="reg-table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Dependencia</th>
+                      <th>Registros</th>
+                      <th>%</th>
+                    </tr>
+                  </thead>
+                  <tbody id="statDepTabla">
+                    <tr>
+                      <td colspan="3" class="sin-datos">Cargando…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div>
+              <div class="section-title">Por nivel del cargo</div>
+              <div class="reg-table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Nivel</th>
+                      <th>Registros</th>
+                      <th>%</th>
+                    </tr>
+                  </thead>
+                  <tbody id="statNivelTabla">
+                    <tr>
+                      <td colspan="3" class="sin-datos">Cargando…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       </div>

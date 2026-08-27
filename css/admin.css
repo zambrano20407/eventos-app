@@ -6,7 +6,9 @@
 .card {
   background: rgba(255, 255, 255, 0.96);
   width: 100%;
-  max-width: 960px;
+  /* Un panel con tablas y gráficos aprovecha el ancho; 960px dejaba
+     media pantalla vacía y apretaba las tablas sin necesidad */
+  max-width: 1400px;
   border-radius: 8px 8px 8px 8px;
   box-shadow: 0 8px 40px rgba(11, 34, 82, 0.13);
   flex: 1;
@@ -910,6 +912,78 @@ tbody td {
   height: 10px;
   border-radius: 2px;
   flex-shrink: 0;
+}
+
+/* ── Participación por sexo ── */
+#grafSexo {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.sexo-item {
+  flex: 1;
+  min-width: 128px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--gris-bd);
+  border-radius: 8px;
+}
+.sexo-ico {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.sexo-ico svg {
+  width: 23px;
+  height: 23px;
+}
+.sexo-nombre {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--gris-txt);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.sexo-pct {
+  font-family: "Montserrat", sans-serif;
+  font-size: 23px;
+  font-weight: 900;
+  line-height: 1.15;
+  color: var(--azul-nav);
+}
+.sexo-n {
+  display: block;
+  font-size: 11px;
+  color: var(--gris-txt);
+}
+.sx-f .sexo-ico {
+  background: #f0ebf9;
+  color: var(--gr-morado);
+}
+.sx-f {
+  border-left: 4px solid var(--gr-morado);
+}
+.sx-m .sexo-ico {
+  background: #e5f6f8;
+  color: var(--gr-teal);
+}
+.sx-m {
+  border-left: 4px solid var(--gr-teal);
+}
+
+/* Las dos tablas de detalle, lado a lado */
+.tablas-duo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 20px;
+  align-items: start;
 }
 
 /* ── Cumplimiento de la convocatoria ── */

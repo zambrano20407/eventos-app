@@ -100,6 +100,45 @@ function pintarDona(contenedor, datos) {
     <div class="dona-leyenda">${leyenda}</div>`;
 }
 
+/* Participación por sexo, con icono y cifras en vez de barras. Son dos
+   categorías nada más: la barra no aportaba comparación y el icono se
+   lee de un vistazo. El número y el porcentaje van escritos, así que la
+   identidad no depende del color. */
+const ICONO_SEXO = {
+  f: `<path d="M12 3a5 5 0 1 1 0 10 5 5 0 0 1 0-10z"/><line x1="12" y1="13" x2="12" y2="21"/><line x1="9" y1="18" x2="15" y2="18"/>`,
+  m: `<circle cx="10" cy="14" r="5"/><line x1="14" y1="10" x2="20" y2="4"/><polyline points="15,4 20,4 20,9"/>`,
+};
+
+function pintarSexo(datos) {
+  const caja = document.getElementById("grafSexo");
+  if (!caja) return;
+  const total = datos.reduce((s, [, n]) => s + n, 0);
+  if (!total) {
+    caja.innerHTML = '<p class="graf-vacio">Sin datos para mostrar.</p>';
+    return;
+  }
+  caja.innerHTML = datos
+    .map(([etiqueta, n]) => {
+      const esF = etiqueta.toLowerCase().startsWith("f");
+      const clase = esF ? "sx-f" : "sx-m";
+      const pct = Math.round((n / total) * 100);
+      return `<div class="sexo-item ${clase}">
+        <div class="sexo-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            ${esF ? ICONO_SEXO.f : ICONO_SEXO.m}
+          </svg>
+        </div>
+        <div class="sexo-txt">
+          <span class="sexo-nombre">${etiqueta}</span>
+          <b class="sexo-pct">${pct}%</b>
+          <span class="sexo-n">${n} asistente${n === 1 ? "" : "s"}</span>
+        </div>
+      </div>`;
+    })
+    .join("");
+}
+
 /* Municipios con asistentes, deducidos del nombre de la dependencia */
 function municipiosCubiertos(registros) {
   const cubiertos = new Set();
@@ -234,9 +273,7 @@ export function pintarTablero(todosEventos, todosRegistros, evId) {
     .map(([dep, n]) => [nombreCorto(dep), n, dep]);
   pintarBarras("grafDependencia", porDependencia, "#1455a4");
   pintarDona("grafNivel", contarPor(registros, "nivel"));
-  pintarBarras("grafSexo", contarPor(registros, "sexo"), (etq) =>
-    etq.toLowerCase().startsWith("f") ? "#6b4fa8" : "#009aad",
-  );
+  pintarSexo(contarPor(registros, "sexo"));
 
   // Comparar eventos solo tiene sentido viendo el conjunto
   const verTodos = !evId;
