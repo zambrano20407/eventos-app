@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Muestra · Vencimiento de accesos</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="stylesheet" href="../css/asistencia.css" />
+    <link rel="stylesheet" href="../css/formularios.css" />
+    <link rel="stylesheet" href="../css/usuarios.css" />
+    <style>
+      body { background: #eef1f6; }
+      .demo-wrap { max-width: 900px; margin: 24px auto; padding: 0 16px; }
+      .demo-card { background: #fff; border-radius: 10px; padding: 20px 22px; }
+      .demo-aviso {
+        font-size: 12.5px; color: #92400e; background: #fffbeb;
+        border: 1.5px solid #fcd34d; border-radius: 6px;
+        padding: 10px 14px; margin-bottom: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="demo-wrap">
+      <p class="demo-aviso">
+        <strong>Página de muestra</strong> con datos inventados, solo para revisar
+        el diseño del panel de vencimientos.
+      </p>
+      <div class="demo-card">
+        <div id="panelVencimientos"></div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { revisarTodas, textoPlazo } from "../js/vigencias.js";
+
+      const NOMBRES_SISTEMA = {
+        correo: "Correo", ani: "ANI", webservice: "Web Service",
+        gedid: "GED ID", gedrc: "GED RC", sirc: "SIRC", hled: "HLED",
+      };
+
+      // Fechas relativas a hoy, para que la muestra siga sirviendo mañana
+      const enDias = (n) => {
+        const d = new Date();
+        d.setDate(d.getDate() + n);
+        return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, "0"),
+                String(d.getDate()).padStart(2, "0")].join("-");
+      };
+
+      const SOLICITUDES = [
+        { id: "1", nombres: "NUBIA", apellidos: "SUÁREZ MARÍN",
+          vigenciaHasta: enDias(-112), sistemas: { sirc: { estado: "Activo" } } },
+        { id: "2", nombres: "EDWIN JAVIER", apellidos: "RAMÍREZ ROJAS",
+          vigenciaHasta: enDias(-3),
+          sistemas: { ani: { estado: "Activo" }, correo: { estado: "Activo" } } },
+        { id: "3", nombres: "LILIANA", apellidos: "CERQUERA SOTO",
+          vigenciaHasta: enDias(1), sistemas: { gedid: { estado: "Activo" } } },
+        { id: "4", nombres: "ROSA ELVIRA", apellidos: "DIAZ",
+          vigenciaHasta: enDias(22),
+          sistemas: { hled: { estado: "Activo" }, sirc: { estado: "Inactivo" } } },
+        // No deben aparecer: uno ya inactivo y uno que vence lejos
+        { id: "5", nombres: "NO", apellidos: "DEBE SALIR (inactivo)",
+          vigenciaHasta: enDias(-50), sistemas: { sirc: { estado: "Inactivo" } } },
+        { id: "6", nombres: "NO", apellidos: "DEBE SALIR (lejano)",
+          vigenciaHasta: enDias(200), sistemas: { sirc: { estado: "Activo" } } },
+      ];
+
+      const { avisos, vencidos, porVencer } = revisarTodas(SOLICITUDES);
+      const titulo = [
+        vencidos ? `<strong>${vencidos}</strong> acceso(s) vencido(s)` : "",
+        porVencer ? `<strong>${porVencer}</strong> por vencer` : "",
+      ].filter(Boolean).join(" · ");
+
+      document.getElementById("panelVencimientos").innerHTML = `
+        <div class="venc-caja">
+          <div class="venc-cabeza">⚠️ ${titulo}</div>
+          <p class="venc-nota">
+            La aplicación no puede revocar el acceso en el SIRC, el ANI ni los
+            demás: son sistemas del nivel central. Esto es el recordatorio de a
+            quién hay que tramitarle la baja.
+          </p>
+          ${avisos.map((a) => {
+            const s = a.solicitud;
+            const sistemas = a.activos.map((x) => NOMBRES_SISTEMA[x] || x).join(", ");
+            return `<div class="venc-item ${a.estado}">
+              <div class="venc-quien">
+                <strong>${s.nombres} ${s.apellidos}</strong>
+                <span>${sistemas} · hasta ${a.hasta}</span>
+              </div>
+              <span class="venc-plazo">${textoPlazo(a)}</span>
+              <div class="venc-acciones">
+                <button>Renovar</button>
+                <button class="baja">Dar de baja</button>
+              </div>
+            </div>`;
+          }).join("")}
+        </div>`;
+    </script>
+  </body>
+</html>

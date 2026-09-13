@@ -98,6 +98,10 @@
             <input type="text" id="lnkUsuarios" readonly onclick="this.select()" />
             <button class="btn-copy" id="copyUsuarios" onclick="window.copiarLinkUsuarios()">Copiar</button>
           </div>
+          <!-- Vencimiento de accesos. Solo aparece si hay algo que
+               atender: un panel vacío permanente se vuelve invisible. -->
+          <div id="panelVencimientos" style="display: none"></div>
+
           <div class="field">
             <label>Filtrar por sistema</label>
             <div class="select-wrap">

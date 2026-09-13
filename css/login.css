@@ -46,42 +46,24 @@ body {
 .split-foto {
   position: relative;
   overflow: hidden;
-  background-color: var(--azul-oscuro);
+  /*background-color: var(--azul-oscuro);*/
   background-image: url("/img/im1.png");
   background-size: cover;
   background-position: center;
   display: flex;
   align-items: flex-end;
 }
-/* Velo azul: la foto sola no da contraste suficiente para el texto */
-.foto-velo {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    160deg,
-    rgba(11, 34, 82, 0.72) 0%,
-    rgba(11, 34, 82, 0.86) 55%,
-    rgba(13, 44, 110, 0.95) 100%
-  );
-}
-/* Corte diagonal claro, el gesto que da el aire de la referencia */
-.foto-diagonal {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    108deg,
-    transparent 0%,
-    transparent 46%,
-    rgba(0, 165, 181, 0.22) 46%,
-    rgba(0, 165, 181, 0.22) 53%,
-    transparent 53%
-  );
-}
 .foto-texto {
   position: relative;
   padding: 0 clamp(28px, 5vw, 68px) clamp(46px, 7vh, 84px);
   color: #fff;
   max-width: 640px;
+}
+.tarjeta-login {
+  display: flex;
+  flex-direction: column; /* Apila los elementos hacia abajo */
+  align-items: center;    /* Centra horizontalmente todos los elementos */
+  text-align: center;     /* Centra el texto por si ocupa varias líneas */              /* Espaciado uniforme entre cada elemento */
 }
 .foto-kicker {
   font-size: 11px;
@@ -141,7 +123,7 @@ body {
 }
 .form-logo {
   display: block;
-  height: 58px;
+  height: 100px;
   margin: 0 auto 22px;
   object-fit: contain;
 }

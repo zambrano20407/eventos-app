@@ -109,6 +109,12 @@
   border-color: var(--amarillo, #f5c400);
   color: var(--azul-nav, #0b2252);
 }
+/* Vencido pesa más que pendiente: rojo, y por eso va aparte del ámbar */
+.modulo-stat.grave {
+  background: #c0392b;
+  border-color: #c0392b;
+  color: #fff;
+}
 .modulo-stat.proximamente {
   background: var(--amarillo, #f5c400);
   border-color: var(--amarillo, #f5c400);

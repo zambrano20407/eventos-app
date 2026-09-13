@@ -3,6 +3,7 @@
    Protege la pagina, saluda al gestor y muestra contadores.
    ============================================================ */
 import { db, auth } from "./firebase-config.js";
+import { revisarTodas } from "./vigencias.js";
 import {
   collection,
   getDocs,
@@ -66,9 +67,16 @@ async function cargarContadores() {
       const s = d.data().sistemas || {};
       return Object.values(s).some((x) => (x.estado || "Pendiente") === "Pendiente");
     }).length;
+    // Vencimiento de accesos: lo que hoy nadie revisa a mano
+    const { vencidos, porVencer } = revisarTodas(usu.docs.map((d) => d.data()));
+
     const partes = [`<span class="modulo-stat">${usu.size} solicitud(es)</span>`];
     if (pendientes)
       partes.push(`<span class="modulo-stat alerta">${pendientes} pendiente(s)</span>`);
+    if (vencidos)
+      partes.push(`<span class="modulo-stat grave">${vencidos} vencido(s)</span>`);
+    if (porVencer)
+      partes.push(`<span class="modulo-stat alerta">${porVencer} por vencer</span>`);
     document.getElementById("statsUsuarios").innerHTML = partes.join("");
   } catch (e) {
     console.warn("Contador usuarios:", e.message);
