@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Muestra · Calendario de eventos</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="stylesheet" href="../css/admin.css" />
+    <style>
+      body { background: #eef1f6; }
+      .demo-wrap { max-width: 1400px; margin: 24px auto; padding: 0 16px; }
+      .demo-card { background: #fff; border-radius: 10px; padding: 22px 24px; }
+      .demo-aviso {
+        font-size: 12.5px; color: #92400e; background: #fffbeb;
+        border: 1.5px solid #fcd34d; border-radius: 6px;
+        padding: 10px 14px; margin-bottom: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="demo-wrap">
+      <p class="demo-aviso">
+        <strong>Página de muestra</strong> con eventos inventados, solo para
+        revisar el diseño del calendario.
+      </p>
+      <div class="demo-card">
+        <div class="vista-toggle">
+          <button class="vista-btn" id="vistaLista">☰ Lista</button>
+          <button class="vista-btn activa" id="vistaCalendario">▦ Calendario</button>
+        </div>
+
+        <div class="cal-cabeza">
+          <button class="cal-nav" onclick="mover(-1)">‹</button>
+          <span class="cal-mes" id="calMes">—</span>
+          <button class="cal-nav" onclick="mover(1)">›</button>
+          <button class="cal-hoy" onclick="mover(0)">Hoy</button>
+        </div>
+        <div class="cal-dias" id="calDias"></div>
+        <div class="cal-rejilla" id="calRejilla"></div>
+        <p class="cal-leyenda">
+          <span class="cal-punto abierto"></span> Abierto
+          <span class="cal-punto cerrado"></span> Cerrado
+          <span class="cal-sep">·</span>
+          El número al lado de cada evento es cuántas sedes convocadas asistieron.
+        </p>
+      </div>
+    </div>
+
+    <script type="module">
+      import {
+        mesDeHoy, sumarMeses, nombreMes, pintarDiasSemana, pintarMes,
+      } from "../js/calendario.js";
+
+      // Fechas del mes en curso, para que la muestra sirva siempre
+      const hoy = new Date();
+      const dia = (n) => {
+        const d = new Date(hoy.getFullYear(), hoy.getMonth(), n);
+        return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, "0"),
+                String(d.getDate()).padStart(2, "0")].join("-");
+      };
+
+      const ITEMS = [
+        { ev: { id: "1", nombre: "Jornada de Identificación Solano", fechaISO: dia(3),
+                jornada: "Completa", cerrado: true, convocaSedes: ["a","b","c","d"] },
+          regsDocs: [{ dependencia: "a" }, { dependencia: "b" }, { dependencia: "c" }] },
+        { ev: { id: "2", nombre: "Capacitación SIRC", fechaISO: dia(3),
+                jornada: "Mañana", cerrado: true, convocaSedes: ["a","b"] },
+          regsDocs: [{ dependencia: "a" }] },
+        { ev: { id: "3", nombre: "Comité Departamental", fechaISO: dia(11),
+                jornada: "Tarde", cerrado: true }, regsDocs: [] },
+        { ev: { id: "4", nombre: "Socialización El Doncello", fechaISO: dia(17),
+                jornada: "Mañana", cerrado: false, convocaSedes: ["a","b","c"] },
+          regsDocs: [{ dependencia: "a" }, { dependencia: "b" }, { dependencia: "c" }] },
+        { ev: { id: "5", nombre: "Mesa de trabajo", fechaISO: dia(24),
+                jornada: "Completa", cerrado: false }, regsDocs: [] },
+        { ev: { id: "6", nombre: "Mes pasado (no debe verse)",
+                fechaISO: dia(-5), cerrado: true }, regsDocs: [] },
+      ];
+
+      const cump = (ev) => {
+        const s = ev.convocaSedes || [];
+        if (!s.length) return "";
+        const it = ITEMS.find((x) => x.ev.id === ev.id);
+        const pres = new Set(it.regsDocs.map((r) => r.dependencia));
+        return `${s.filter((x) => pres.has(x)).length}/${s.length}`;
+      };
+
+      let mes = mesDeHoy();
+      window.abrirEventoDesdeCalendario = (id) =>
+        alert("En el panel real abre los registros del evento " + id);
+      window.mover = (n) => {
+        mes = n === 0 ? mesDeHoy() : sumarMeses(mes, n);
+        pintar();
+      };
+      function pintar() {
+        document.getElementById("calMes").textContent = nombreMes(mes);
+        pintarDiasSemana("calDias");
+        pintarMes("calRejilla", mes, ITEMS, cump);
+      }
+      pintar();
+    </script>
+  </body>
+</html>

@@ -202,8 +202,35 @@
               <strong>únicamente para el administrador</strong>.</span
             >
           </div>
+          <!-- Dos formas de ver los mismos eventos -->
+          <div class="vista-toggle">
+            <button class="vista-btn activa" id="vistaLista" onclick="window.cambiarVistaEventos('lista')">
+              ☰ Lista
+            </button>
+            <button class="vista-btn" id="vistaCalendario" onclick="window.cambiarVistaEventos('calendario')">
+              ▦ Calendario
+            </button>
+          </div>
+
           <div class="eventos-list" id="eventosList">
             <div class="no-eventos">Cargando eventos…</div>
+          </div>
+
+          <div id="eventosCalendario" style="display: none">
+            <div class="cal-cabeza">
+              <button class="cal-nav" onclick="window.moverMes(-1)" aria-label="Mes anterior">‹</button>
+              <span class="cal-mes" id="calMes">—</span>
+              <button class="cal-nav" onclick="window.moverMes(1)" aria-label="Mes siguiente">›</button>
+              <button class="cal-hoy" onclick="window.moverMes(0)">Hoy</button>
+            </div>
+            <div class="cal-dias" id="calDias"></div>
+            <div class="cal-rejilla" id="calRejilla"></div>
+            <p class="cal-leyenda">
+              <span class="cal-punto abierto"></span> Abierto
+              <span class="cal-punto cerrado"></span> Cerrado
+              <span class="cal-sep">·</span>
+              El número al lado de cada evento es cuántas sedes convocadas asistieron.
+            </p>
           </div>
         </div>
       </div>

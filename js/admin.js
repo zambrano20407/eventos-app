@@ -2,6 +2,13 @@ import { db, auth } from "./firebase-config.js";
 import { pintarTablero } from "./tablero.js";
 import { SEDES, sedeCorta } from "./sedes.js";
 import {
+  mesDeHoy,
+  sumarMeses,
+  nombreMes,
+  pintarDiasSemana,
+  pintarMes,
+} from "./calendario.js";
+import {
   collection,
   addDoc,
   getDocs,
@@ -177,6 +184,82 @@ function generarLink(evId) {
 }
 
 /* ══════════════════════════════════════════
+   VISTA DE CALENDARIO
+
+   Es otra forma de ver los mismos eventos, no un módulo aparte: se
+   alimenta de lo que renderEventos() ya cargó.
+══════════════════════════════════════════ */
+let _mesVisible = mesDeHoy();
+
+/* Cuántas sedes convocadas asistieron, para pintarlo en la pastilla.
+   Vacío si el evento no tiene convocatoria por sedes. */
+function cumplimientoDelEvento(ev) {
+  const sedes = ev.convocaSedes || [];
+  if (!sedes.length) return "";
+  const item = (window._eventosItems || []).find((x) => x.ev.id === ev.id);
+  const presentes = cruzarSedes(sedes, item?.regsDocs || []).asistieron.length;
+  return `${presentes}/${sedes.length}`;
+}
+
+function pintarCalendario() {
+  document.getElementById("calMes").textContent = nombreMes(_mesVisible);
+  pintarDiasSemana("calDias");
+  pintarMes("calRejilla", _mesVisible, window._eventosItems || [], cumplimientoDelEvento);
+}
+
+window.cambiarVistaEventos = function (vista) {
+  const esLista = vista === "lista";
+  document.getElementById("eventosList").style.display = esLista ? "" : "none";
+  document.getElementById("eventosCalendario").style.display = esLista ? "none" : "block";
+  document.getElementById("vistaLista").classList.toggle("activa", esLista);
+  document.getElementById("vistaCalendario").classList.toggle("activa", !esLista);
+  if (!esLista) pintarCalendario();
+};
+
+/* n = 0 vuelve al mes actual */
+window.moverMes = function (n) {
+  _mesVisible = n === 0 ? mesDeHoy() : sumarMeses(_mesVisible, n);
+  pintarCalendario();
+};
+
+/* Al hacer clic en un evento del calendario se abre lo mismo que desde
+   la lista: sus registros de asistencia */
+window.abrirEventoDesdeCalendario = function (evId) {
+  window.tab("registros");
+  const sel = document.getElementById("regSelector");
+  // El selector se llena al entrar a la pestaña, así que se espera un
+  // instante antes de elegir el evento
+  setTimeout(() => {
+    if (!sel) return;
+    sel.value = evId;
+    window.cargarRegistros();
+  }, 60);
+};
+
+/* ══════════════════════════════════════════
+   FECHA DEL EVENTO
+
+   `fecha` se guardaba solo como texto para mostrar ("25/8/2026"), que no
+   se puede ordenar ni agrupar por mes sin adivinar el formato. Ahora se
+   guarda además `fechaISO` ("2026-08-25"), que sí es comparable.
+══════════════════════════════════════════ */
+
+/* Convierte la fecha en texto es-CO (d/m/aaaa) a ISO. Devuelve "" si no
+   se entiende, para no inventar una fecha equivocada. */
+function fechaTextoAISO(texto) {
+  const m = String(texto || "").trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (!m) return "";
+  const [, d, mes, a] = m;
+  if (+mes < 1 || +mes > 12 || +d < 1 || +d > 31) return "";
+  return `${a}-${mes.padStart(2, "0")}-${d.padStart(2, "0")}`;
+}
+
+/* La fecha comparable de un evento, venga de donde venga */
+function isoDe(ev) {
+  return ev.fechaISO || fechaTextoAISO(ev.fecha);
+}
+
+/* ══════════════════════════════════════════
    CREAR EVENTO
 ══════════════════════════════════════════ */
 window.crearEvento = async function () {
@@ -200,6 +283,8 @@ window.crearEvento = async function () {
     const docRef = await addDoc(collection(db, COL_EVENTOS), {
       nombre,
       fecha,
+      // El <input type="date"> ya entrega ISO; se guarda tal cual
+      fechaISO: fechaRaw || new Date().toISOString().split("T")[0],
       jornada: document.getElementById("evJornada").value,
       institucion: document.getElementById("evInstitucion").value.trim(),
       creadoEn: Timestamp.now(),
@@ -674,6 +759,24 @@ async function renderEventos() {
     // Guardar los eventos para reabrir el modal sin volver a leer
     window._eventosPorId = {};
     items.forEach(({ ev }) => (window._eventosPorId[ev.id] = ev));
+    window._eventosItems = items;
+
+    // Los eventos creados antes solo tienen la fecha en texto. Se les
+    // completa la fecha ISO al vuelo, una sola vez cada uno, para no
+    // tener que correr un script de migración aparte.
+    items.forEach(({ ev }) => {
+      if (ev.fechaISO) return;
+      const iso = fechaTextoAISO(ev.fecha);
+      if (!iso) return;
+      ev.fechaISO = iso;
+      updateDoc(doc(db, COL_EVENTOS, ev.id), { fechaISO: iso }).catch((e) =>
+        console.warn("No se pudo completar la fecha de", ev.nombre, e.message),
+      );
+    });
+
+    // Ahora que hay fecha comparable, los eventos se listan por la fecha
+    // del evento y no por cuándo se crearon
+    items.sort((a, b) => (isoDe(b.ev) || "").localeCompare(isoDe(a.ev) || ""));
 
     list.innerHTML = items
       .map(({ ev, count, regsDocs }) => {
@@ -725,6 +828,11 @@ async function renderEventos() {
       </div>`;
       })
       .join("");
+
+    // Si el calendario está a la vista, que refleje lo recién cargado
+    if (document.getElementById("eventosCalendario")?.style.display === "block") {
+      pintarCalendario();
+    }
   } catch (err) {
     console.error("Error cargando eventos:", err);
     list.innerHTML =
