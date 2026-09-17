@@ -4,6 +4,8 @@
    encabezado, tabla de 25 filas por pagina, firmas y pie.
    ============================================================ */
 
+import { siglaSexo } from "./sexo.js";
+
 const FILAS_POR_PAGINA = 25;
 
 async function cargarJsPDF() {
@@ -245,7 +247,7 @@ function dibujarPagina(doc, evento, registros, logo) {
       escribirCentrado(reg.dependencia || "", 3, 5.5);
 
       doc.setFontSize(6.5);
-      doc.text((reg.sexo || "M")[0].toUpperCase(), xs[4] + cols[4].w / 2, y + hFila / 2 + 1, { align: "center" });
+      doc.text(siglaSexo(reg), xs[4] + cols[4].w / 2, y + hFila / 2 + 1, { align: "center" });
 
       const marcas = ["directivo", "asesor", "profesional", "tecnico", "asistencial"];
       marcas.forEach((niv, i) => {

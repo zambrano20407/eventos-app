@@ -1,4 +1,5 @@
 import { sedeCorta } from "./sedes.js";
+import { grupoSexo } from "./sexo.js";
 
 /* ══════════════════════════════════════════
    tablero.js — Gráficos del tablero de estadísticas
@@ -100,14 +101,19 @@ function pintarDona(contenedor, datos) {
     <div class="dona-leyenda">${leyenda}</div>`;
 }
 
-/* Participación por sexo, con icono y cifras en vez de barras. Son dos
-   categorías nada más: la barra no aportaba comparación y el icono se
-   lee de un vistazo. El número y el porcentaje van escritos, así que la
-   identidad no depende del color. */
+/* Participación por sexo, con icono y cifras en vez de barras: con tan
+   pocas categorías la barra no aportaba ninguna comparación que el
+   porcentaje escrito no diera mejor, y el icono se lee de un vistazo.
+   El número y el porcentaje van escritos, así que la identidad no
+   depende del color. */
 const ICONO_SEXO = {
-  f: `<path d="M12 3a5 5 0 1 1 0 10 5 5 0 0 1 0-10z"/><line x1="12" y1="13" x2="12" y2="21"/><line x1="9" y1="18" x2="15" y2="18"/>`,
-  m: `<circle cx="10" cy="14" r="5"/><line x1="14" y1="10" x2="20" y2="4"/><polyline points="15,4 20,4 20,9"/>`,
+  Femenino: `<path d="M12 3a5 5 0 1 1 0 10 5 5 0 0 1 0-10z"/><line x1="12" y1="13" x2="12" y2="21"/><line x1="9" y1="18" x2="15" y2="18"/>`,
+  Masculino: `<circle cx="10" cy="14" r="5"/><line x1="14" y1="10" x2="20" y2="4"/><polyline points="15,4 20,4 20,9"/>`,
+  // Círculo con las tres ramas: el signo usual de quien no se reconoce
+  // en ninguno de los dos anteriores
+  Otro: `<circle cx="12" cy="14" r="4.5"/><line x1="12" y1="9.5" x2="12" y2="3"/><line x1="9.5" y1="5.5" x2="14.5" y2="5.5"/><line x1="15.2" y1="10.8" x2="19.5" y2="6.5"/><polyline points="15.5,6.5 19.5,6.5 19.5,10.5"/>`,
 };
+const CLASE_SEXO = { Femenino: "sx-f", Masculino: "sx-m", Otro: "sx-o" };
 
 function pintarSexo(datos) {
   const caja = document.getElementById("grafSexo");
@@ -119,14 +125,17 @@ function pintarSexo(datos) {
   }
   caja.innerHTML = datos
     .map(([etiqueta, n]) => {
-      const esF = etiqueta.toLowerCase().startsWith("f");
-      const clase = esF ? "sx-f" : "sx-m";
+      // Cualquier valor que no sea masculino o femenino cuenta como
+      // "Otro": las descripciones libres se agrupan para que la
+      // estadística siga siendo legible
+      const grupo = CLASE_SEXO[etiqueta] ? etiqueta : "Otro";
+      const clase = CLASE_SEXO[grupo];
       const pct = Math.round((n / total) * 100);
       return `<div class="sexo-item ${clase}">
         <div class="sexo-ico">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            ${esF ? ICONO_SEXO.f : ICONO_SEXO.m}
+            ${ICONO_SEXO[grupo]}
           </svg>
         </div>
         <div class="sexo-txt">
@@ -273,7 +282,8 @@ export function pintarTablero(todosEventos, todosRegistros, evId) {
     .map(([dep, n]) => [nombreCorto(dep), n, dep]);
   pintarBarras("grafDependencia", porDependencia, "#1455a4");
   pintarDona("grafNivel", contarPor(registros, "nivel"));
-  pintarSexo(contarPor(registros, "sexo"));
+  // Se cuenta el grupo normalizado, no el texto que cada quien escribió
+  pintarSexo(contarPor(registros.map((r) => ({ sexo: grupoSexo(r) })), "sexo"));
 
   // Comparar eventos solo tiene sentido viendo el conjunto
   const verTodos = !evId;

@@ -1,6 +1,7 @@
 import { db, auth } from "./firebase-config.js";
 import { pintarTablero } from "./tablero.js";
 import { SEDES, sedeCorta } from "./sedes.js";
+import { siglaSexo, etiquetaSexo } from "./sexo.js";
 import {
   mesDeHoy,
   sumarMeses,
@@ -937,7 +938,7 @@ window.cargarRegistros = async function () {
         <td>${r.cedula}</td>
         <td style="font-weight:500;white-space:nowrap">${r.nombre}</td>
         <td style="font-size:11.5px">${r.dependencia}</td>
-        <td>${(r.sexo || "").charAt(0)}</td>
+        <td title="${etiquetaSexo(r)}">${siglaSexo(r)}</td>
         <td><span class="nivel-badge">${r.nivel}</span></td>
         <td style="font-size:11px;color:var(--txt)">${hora}</td>
         <td><img class="thumb-firma" src="${r.firma}" onclick="verFirma('${r.firma}','${r.nombre.replace(/'/g, "\\'")}')"></td>
@@ -1159,6 +1160,7 @@ function descargarCSV(registros, nombreArchivo) {
     "Nombres y Apellidos",
     "Dependencia",
     "Sexo",
+    "Sexo (como se identifica)",
     "Nivel del Cargo",
     "Fecha y Hora Registro",
   ];
@@ -1174,6 +1176,7 @@ function descargarCSV(registros, nombreArchivo) {
       `"${(r.nombre || "").replace(/"/g, '""')}"`,
       `"${(r.dependencia || "").replace(/"/g, '""')}"`,
       r.sexo,
+      `"${(r.sexoDetalle || "").replace(/"/g, '""')}"`,
       r.nivel,
       `"${ts}"`,
     ].join(",");

@@ -484,3 +484,11 @@ canvas {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* Campo libre del componente sexo, visible solo al marcar "Otro" */
+.sexo-otro {
+  margin-top: 8px;
+}
+.sexo-otro input {
+  width: 100%;
+}

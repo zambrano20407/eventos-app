@@ -5,6 +5,8 @@
    Si hay mas de 25 registros, crea una hoja por cada grupo de 25.
    ============================================================ */
 
+import { siglaSexo } from "./sexo.js";
+
 const REGISTROS_POR_HOJA = 25;
 
 async function cargarExcelJS() {
@@ -70,7 +72,9 @@ function llenarHoja(wb, ws, evento, registros, logoBase64, esClon) {
     ws.getCell(fila, 3).value  = reg.cedula     || "";
     ws.getCell(fila, 5).value  = reg.nombre      || "";
     ws.getCell(fila, 7).value  = reg.dependencia || "";
-    ws.getCell(fila, 8).value  = (reg.sexo || "M")[0].toUpperCase();
+    // Antes se tomaba la primera letra, que solo servía con dos
+    // opciones; ahora la sigla es explícita (M, F u O)
+    ws.getCell(fila, 8).value  = siglaSexo(reg);
     ws.getCell(fila, 9).value  = nivel === "directivo"   ? "X" : "";
     ws.getCell(fila, 10).value = nivel === "asesor"       ? "X" : "";
     ws.getCell(fila, 11).value = nivel === "profesional"  ? "X" : "";

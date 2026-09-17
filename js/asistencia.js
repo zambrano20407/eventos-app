@@ -36,8 +36,27 @@ function llenarDependencias() {
   );
 }
 
+/* El campo de texto solo se muestra al marcar "Otro". Al cambiar a
+   Masculino o Femenino se limpia, para no guardar un texto que ya no
+   corresponde a lo marcado. */
+function conectarSexoOtro() {
+  const wrap = document.getElementById("sexoOtroWrap");
+  const detalle = document.getElementById("sexoDetalle");
+  if (!wrap || !detalle) return;
+
+  document.querySelectorAll('input[name="sexo"]').forEach((radio) => {
+    radio.addEventListener("change", () => {
+      const esOtro = radio.value === "Otro" && radio.checked;
+      wrap.style.display = esOtro ? "block" : "none";
+      if (esOtro) detalle.focus();
+      else detalle.value = "";
+    });
+  });
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   llenarDependencias();
+  conectarSexoOtro();
   const evId = new URLSearchParams(window.location.search).get("ev");
 
   // Sin parámetro ev en la URL → enlace inválido
@@ -326,6 +345,8 @@ window.enviar = async function () {
     console.error("Error verificando cédula duplicada:", err);
   }
 
+  const sexoMarcado = document.querySelector('input[name="sexo"]:checked').value;
+
   const registro = {
     eventoId: eventoActivo.id,
     eventoNombre: eventoActivo.nombre,
@@ -333,7 +354,13 @@ window.enviar = async function () {
     cedula: document.getElementById("cedula").value.trim(),
     nombre: document.getElementById("nombre").value.trim(),
     dependencia: dep.value,
-    sexo: document.querySelector('input[name="sexo"]:checked').value,
+    sexo: sexoMarcado,
+    // Solo se guarda cuando marcaron "Otro": si alguien escribió algo y
+    // luego cambió de opción, ese texto no debe quedar colgado
+    sexoDetalle:
+      sexoMarcado === "Otro"
+        ? document.getElementById("sexoDetalle").value.trim()
+        : "",
     nivel: document.querySelector('input[name="nivel"]:checked').value,
     firma: canvas.toDataURL("image/png"),
     creadoEn: Timestamp.now(),

@@ -164,6 +164,25 @@
                 value="Femenino"
               /><label for="sexo_f">♀ &nbsp;Femenino</label>
             </div>
+            <div class="pill">
+              <input
+                type="radio"
+                name="sexo"
+                id="sexo_o"
+                value="Otro"
+              /><label for="sexo_o">⚧ &nbsp;Otro</label>
+            </div>
+          </div>
+          <!-- Solo aparece al marcar "Otro". Escribirlo es opcional:
+               obligar a describirse sería otra forma de imponer. -->
+          <div id="sexoOtroWrap" class="sexo-otro" style="display: none">
+            <input
+              type="text"
+              id="sexoDetalle"
+              maxlength="40"
+              autocomplete="off"
+              placeholder="¿Cómo se identifica? (opcional)"
+            />
           </div>
         </div>
 

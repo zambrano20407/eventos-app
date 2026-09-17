@@ -1625,3 +1625,12 @@ tbody td {
     font-size: 9px;
   }
 }
+
+/* Tercera categoría de sexo: mismo tratamiento que las otras dos */
+.sx-o .sexo-ico {
+  background: #fbf3e0;
+  color: var(--gr-ambar);
+}
+.sx-o {
+  border-left: 4px solid var(--gr-ambar);
+}
