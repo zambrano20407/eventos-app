@@ -52,6 +52,25 @@ function conectarSexoOtro() {
       else detalle.value = "";
     });
   });
+
+  // Solo letras: aquí se describe una identidad, no se anotan cifras.
+  // No se pasa a mayúsculas como el nombre, porque este texto no va al
+  // formato oficial y es la persona quien decide cómo escribirlo.
+  const SOLO_LETRAS = /[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g;
+
+  detalle.addEventListener("input", () => {
+    const pos = detalle.selectionStart;
+    const limpio = detalle.value.replace(SOLO_LETRAS, "");
+    if (limpio === detalle.value) return; // nada que corregir
+    detalle.value = limpio;
+    detalle.setSelectionRange(pos - 1, pos - 1);
+  });
+
+  detalle.addEventListener("paste", (e) => {
+    e.preventDefault();
+    const texto = (e.clipboardData || window.clipboardData).getData("text");
+    detalle.value = texto.replace(SOLO_LETRAS, "").slice(0, 40);
+  });
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
