@@ -37,6 +37,41 @@ function llenarDependencias() {
   );
 }
 
+/* ══════════════════════════════════════════
+   MAYÚSCULAS SEGÚN LA GTC 185
+
+   La guía de documentación organizacional reserva la mayúscula
+   sostenida para las etiquetas del formato (FECHA, LUGAR, ASISTENTES) y
+   pide mayúscula inicial para los datos: el nombre y el cargo. Además
+   se lee mejor: en mayúscula sostenida todas las letras quedan del
+   mismo alto y se pierde la silueta de la palabra.
+══════════════════════════════════════════ */
+
+// En español estas palabras van en minúscula dentro de un nombre,
+// salvo cuando lo encabezan
+const PARTICULAS = ["de", "del", "la", "las", "los", "y", "e", "da", "do"];
+
+/* "LILIANA CERQUERA DE LA CRUZ" → "Liliana Cerquera de la Cruz" */
+function comoNombrePropio(texto) {
+  return String(texto || "")
+    .toLowerCase()
+    .split(" ")
+    .map((palabra, i) => {
+      if (!palabra) return palabra;
+      if (i > 0 && PARTICULAS.includes(palabra)) return palabra;
+      return palabra[0].toUpperCase() + palabra.slice(1);
+    })
+    .join(" ");
+}
+
+/* "REGISTRADOR MUNICIPAL" → "Registrador municipal".
+   Los cargos son nombres comunes, así que solo se capitaliza el
+   inicio, no cada palabra. */
+function comoOracion(texto) {
+  const limpio = String(texto || "").toLowerCase();
+  return limpio ? limpio[0].toUpperCase() + limpio.slice(1) : limpio;
+}
+
 /* ¿El evento se lleva en el formato de reuniones (SGFT07)? */
 function esFormatoReuniones() {
   return formatoDe(eventoActivo).codigo === "SGFT07";
@@ -71,15 +106,19 @@ function aplicarFormatoAlFormulario() {
     const SOLO_LETRAS = /[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g;
     cargo.addEventListener("input", () => {
       const pos = cargo.selectionStart;
-      const limpio = cargo.value.replace(SOLO_LETRAS, "");
+      const filtrado = cargo.value.replace(SOLO_LETRAS, "");
+      const limpio = comoOracion(filtrado);
       if (limpio === cargo.value) return;
       cargo.value = limpio;
-      cargo.setSelectionRange(pos - 1, pos - 1);
+      // Si solo cambió el uso de mayúsculas el largo es el mismo y el
+      // cursor no se mueve; si se quitó un carácter, retrocede uno
+      const quitados = cargo.value.length === filtrado.length ? 0 : 1;
+      cargo.setSelectionRange(pos - quitados, pos - quitados);
     });
     cargo.addEventListener("paste", (e) => {
       e.preventDefault();
       const texto = (e.clipboardData || window.clipboardData).getData("text");
-      cargo.value = texto.replace(SOLO_LETRAS, "").slice(0, 60);
+      cargo.value = comoOracion(texto.replace(SOLO_LETRAS, "").slice(0, 60));
     });
   }
 }
@@ -231,7 +270,7 @@ function iniciarInputs() {
     elCedula.value = texto.replace(/[^0-9]/g, "").slice(0, 12);
   });
 
-  // ── NOMBRE: solo letras y espacios, en MAYÚSCULAS ──
+  // ── NOMBRE: solo letras y espacios, con mayúscula inicial ──
   const elNombre = document.getElementById("nombre");
 
   elNombre.addEventListener("keypress", (e) => {
@@ -246,10 +285,10 @@ function iniciarInputs() {
 
   elNombre.addEventListener("input", () => {
     const pos = elNombre.selectionStart;
-    // Quitar caracteres no permitidos y pasar a mayúsculas
-    elNombre.value = elNombre.value
-      .replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, "")
-      .toUpperCase();
+    // Quitar lo que no sean letras y dejarlo como nombre propio
+    elNombre.value = comoNombrePropio(
+      elNombre.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, ""),
+    );
     // Restaurar posición del cursor
     elNombre.setSelectionRange(pos, pos);
   });
@@ -257,9 +296,9 @@ function iniciarInputs() {
   elNombre.addEventListener("paste", (e) => {
     e.preventDefault();
     const texto = (e.clipboardData || window.clipboardData).getData("text");
-    elNombre.value = texto
-      .replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, "")
-      .toUpperCase();
+    elNombre.value = comoNombrePropio(
+      texto.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, ""),
+    );
   });
 }
 

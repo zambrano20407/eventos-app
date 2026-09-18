@@ -39,6 +39,11 @@
             </div>
           </div>
 
+          <div class="field">
+            <label><span class="ico">👤</span> Nombre completo <span class="req">*</span></label>
+            <input type="text" id="nombre" autocomplete="off" placeholder="Ej. Liliana Cerquera Soto" />
+          </div>
+
           <div id="camposSGFT07">
             <div class="field">
               <label><span class="ico">🏷</span> Cargo <span class="req">*</span></label>
@@ -66,15 +71,31 @@
     </div>
 
     <script type="module">
-      // Mismo filtro del formulario real
+      // Mismas reglas del formulario real
       const SOLO_LETRAS = /[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g;
+      const PARTICULAS = ["de", "del", "la", "las", "los", "y", "e", "da", "do"];
+      const comoNombrePropio = (t) => String(t || "").toLowerCase().split(" ")
+        .map((p, i) => (!p ? p : i > 0 && PARTICULAS.includes(p) ? p : p[0].toUpperCase() + p.slice(1)))
+        .join(" ");
+      const comoOracion = (t) => { const l = String(t || "").toLowerCase();
+        return l ? l[0].toUpperCase() + l.slice(1) : l; };
+
+      const nombre = document.getElementById("nombre");
+      nombre.addEventListener("input", () => {
+        const pos = nombre.selectionStart;
+        nombre.value = comoNombrePropio(nombre.value.replace(SOLO_LETRAS, ""));
+        nombre.setSelectionRange(pos, pos);
+      });
+
       const cargo = document.getElementById("cargo");
       cargo.addEventListener("input", () => {
         const pos = cargo.selectionStart;
-        const limpio = cargo.value.replace(SOLO_LETRAS, "");
+        const filtrado = cargo.value.replace(SOLO_LETRAS, "");
+        const limpio = comoOracion(filtrado);
         if (limpio === cargo.value) return;
         cargo.value = limpio;
-        cargo.setSelectionRange(pos - 1, pos - 1);
+        const quitados = cargo.value.length === filtrado.length ? 0 : 1;
+        cargo.setSelectionRange(pos - quitados, pos - quitados);
       });
       const tel = document.getElementById("telefono");
       tel.addEventListener("input", () => {

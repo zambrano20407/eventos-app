@@ -169,10 +169,8 @@ select {
   width: 100%;
   appearance: none;
 }
-/* Nombre siempre en mayúsculas visualmente */
-#nombre {
-  text-transform: uppercase;
-}
+/* El nombre ya llega con mayúscula inicial desde el script; forzar
+   aquí la mayúscula sostenida contradecía la GTC 185 */
 input:focus,
 select:focus {
   border-color: var(--azul-claro);
