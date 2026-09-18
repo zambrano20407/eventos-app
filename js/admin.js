@@ -3,6 +3,7 @@ import { pintarTablero } from "./tablero.js";
 import { SEDES, sedeCorta } from "./sedes.js";
 import { siglaSexo, etiquetaSexo } from "./sexo.js";
 import { FORMATOS, FORMATO_POR_DEFECTO, formatoDe } from "./formatos.js";
+import { montarSelectorFecha, montarSelectorHorario } from "./selectores.js";
 import {
   mesDeHoy,
   sumarMeses,
@@ -345,10 +346,13 @@ window.crearEvento = async function () {
     console.log("Evento creado con ID:", docRef.id);
 
     // Limpiar campos
-    ["evNombre", "evInstitucion", "evHorario"].forEach(
+    ["evNombre", "evInstitucion"].forEach(
       (id) => (document.getElementById(id).value = ""),
     );
-    document.getElementById("evFecha").valueAsDate = new Date();
+    window._selHorario?.limpiar();
+    window._selFecha?.poner(
+      new Date().toLocaleDateString("sv-SE"), // sv-SE entrega AAAA-MM-DD
+    );
     document.getElementById("evJornada").value = "";
 
     renderEventos();
@@ -1300,13 +1304,20 @@ window.cerrarModal = function () {
    INIT
 ══════════════════════════════════════════ */
 document.addEventListener("DOMContentLoaded", () => {
-  // Fecha mínima = hoy (no permite fechas pasadas)
+  // Selectores propios en vez de los controles nativos, que se ven
+  // distintos en cada navegador. El valor sigue guardándose en el mismo
+  // input (ahora oculto), así que el resto del código no cambia.
   const fechaEl = document.getElementById("evFecha");
   if (fechaEl) {
-    const hoy = new Date().toISOString().split("T")[0];
-    fechaEl.min = hoy;
-    fechaEl.valueAsDate = new Date();
+    const h = new Date();
+    fechaEl.value = [
+      h.getFullYear(),
+      String(h.getMonth() + 1).padStart(2, "0"),
+      String(h.getDate()).padStart(2, "0"),
+    ].join("-");
+    window._selFecha = montarSelectorFecha("evFecha");
   }
+  window._selHorario = montarSelectorHorario("evHorario");
 
   // Mayúsculas automáticas en campos del formulario de evento
   ["evNombre", "evInstitucion"].forEach((id) => {
