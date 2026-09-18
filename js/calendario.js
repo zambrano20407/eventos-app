@@ -2,9 +2,9 @@
    calendario.js — Vista de mes de los eventos
 
    Es una cuadrícula de días, no de horas: los eventos guardan jornada
-   (Mañana, Tarde, Noche, Completa), no hora de inicio. Dibujar franjas
-   horarias aparentaría una precisión que el dato no tiene, y dejaría la
-   rejilla casi vacía.
+   o un horario escrito a mano, no una hora de inicio con la que ubicar
+   un bloque. Dibujar franjas horarias aparentaría una precisión que el
+   dato no tiene, y dejaría la rejilla casi vacía.
 
    Módulo puro: recibe los eventos ya cargados y dibuja.
 ══════════════════════════════════════════ */
@@ -83,7 +83,7 @@ export function pintarMes(contenedor, { anio, mes }, items, cumplimientoDe) {
         const cump = cumplimientoDe ? cumplimientoDe(ev) : "";
         const nombre = (ev.nombre || "").replace(/"/g, "&quot;");
         return `<button class="cal-evento ${cerrado ? "cerrado" : "abierto"}"
-          title="${nombre}${ev.jornada ? " · " + ev.jornada : ""}${cump ? " · " + cump + " sedes" : ""}"
+          title="${nombre}${ev.horario || ev.jornada ? " · " + (ev.horario || ev.jornada) : ""}${cump ? " · " + cump + " sedes" : ""}"
           onclick="window.abrirEventoDesdeCalendario('${ev.id}')">
           <span class="cal-ev-nombre">${nombre}</span>
           ${cump ? `<span class="cal-ev-cump">${cump}</span>` : ""}

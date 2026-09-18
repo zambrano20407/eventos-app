@@ -280,9 +280,15 @@ function conectarFormato() {
 
   const aplicar = () => {
     const esReunion = formatoElegido() === "SGFT07";
+    // Jornada y horario se excluyen: cada formato imprime uno solo, y
+    // pedir el otro sería pedir un dato que no va a salir en ninguna
+    // parte del documento
     document.getElementById("evHorarioWrap").style.display = esReunion
       ? "block"
       : "none";
+    document.getElementById("evJornadaWrap").style.display = esReunion
+      ? "none"
+      : "block";
     document.getElementById("evInstitucionLabel").textContent = esReunion
       ? "Lugar de la reunión"
       : "Institución que dicta";
@@ -315,6 +321,8 @@ window.crearEvento = async function () {
     ? new Date(fechaRaw + "T12:00:00").toLocaleDateString("es-CO")
     : new Date().toLocaleDateString("es-CO");
 
+  const esReunion = formatoElegido() === "SGFT07";
+
   const btn = document.getElementById("btnCrearEvento");
   btn.disabled = true;
   btn.textContent = "Creando…";
@@ -325,10 +333,12 @@ window.crearEvento = async function () {
       fecha,
       // El <input type="date"> ya entrega ISO; se guarda tal cual
       fechaISO: fechaRaw || new Date().toISOString().split("T")[0],
-      jornada: document.getElementById("evJornada").value,
       institucion: document.getElementById("evInstitucion").value.trim(),
       formato: formatoElegido(),
-      horario: document.getElementById("evHorario").value.trim(),
+      // Cada formato guarda el suyo: si alguien llenó uno y luego cambió
+      // de formato, ese valor no debe quedar colgado en el evento
+      jornada: esReunion ? "" : document.getElementById("evJornada").value,
+      horario: esReunion ? document.getElementById("evHorario").value.trim() : "",
       creadoEn: Timestamp.now(),
     });
 
