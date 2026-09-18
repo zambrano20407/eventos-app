@@ -143,6 +143,8 @@
 
         <hr class="sep" />
 
+        <!-- Campos que solo pide el PTFT38 (capacitaciones) -->
+        <div id="camposPTFT38">
         <div class="field">
           <label
             ><span class="ico">⚧</span> Sexo <span class="req">*</span></label
@@ -232,6 +234,48 @@
                 value="Asistencial"
               /><label for="n_asi">Asistencial</label>
             </div>
+          </div>
+        </div>
+        </div>
+
+        <!-- Campos que solo pide el SGFT07 (reuniones) -->
+        <div id="camposSGFT07" style="display: none">
+          <div class="field">
+            <label><span class="ico">🏷</span> Cargo <span class="req">*</span></label>
+            <input
+              type="text"
+              id="cargo"
+              maxlength="60"
+              autocomplete="off"
+              placeholder="Ej. Registrador Municipal"
+            />
+          </div>
+          <div class="field">
+            <label
+              ><span class="ico">📞</span> Teléfono / extensión
+              <span class="req">*</span></label
+            >
+            <input
+              type="text"
+              id="telefono"
+              maxlength="15"
+              inputmode="numeric"
+              autocomplete="off"
+              placeholder="Ej. 3123456789"
+            />
+          </div>
+          <div class="field">
+            <label
+              ><span class="ico">✉</span> Correo electrónico
+              <span class="req">*</span></label
+            >
+            <input
+              type="email"
+              id="correo"
+              maxlength="60"
+              autocomplete="off"
+              placeholder="Ej. nombre@registraduria.gov.co"
+            />
           </div>
         </div>
 

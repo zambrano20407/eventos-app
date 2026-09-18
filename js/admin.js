@@ -2,6 +2,7 @@ import { db, auth } from "./firebase-config.js";
 import { pintarTablero } from "./tablero.js";
 import { SEDES, sedeCorta } from "./sedes.js";
 import { siglaSexo, etiquetaSexo } from "./sexo.js";
+import { FORMATOS, FORMATO_POR_DEFECTO, formatoDe } from "./formatos.js";
 import {
   mesDeHoy,
   sumarMeses,
@@ -261,6 +262,44 @@ function isoDe(ev) {
 }
 
 /* ══════════════════════════════════════════
+   FORMATO DEL EVENTO
+
+   Cada formato pide datos distintos, así que la elección cambia tanto
+   el formulario de creación como el que llena el asistente.
+══════════════════════════════════════════ */
+function formatoElegido() {
+  return (
+    document.querySelector('input[name="evFormato"]:checked')?.value ||
+    FORMATO_POR_DEFECTO
+  );
+}
+
+function conectarFormato() {
+  const opciones = document.querySelectorAll('input[name="evFormato"]');
+  if (!opciones.length) return;
+
+  const aplicar = () => {
+    const esReunion = formatoElegido() === "SGFT07";
+    document.getElementById("evHorarioWrap").style.display = esReunion
+      ? "block"
+      : "none";
+    document.getElementById("evInstitucionLabel").textContent = esReunion
+      ? "Lugar de la reunión"
+      : "Institución que dicta";
+    document.getElementById("evInstitucion").placeholder = esReunion
+      ? "Ej. Sala de juntas, Delegación Caquetá"
+      : "Ej. CEDAE – Registraduría Nacional";
+    opciones.forEach((o) =>
+      o.closest(".formato-op").classList.toggle("activa", o.checked),
+    );
+  };
+
+  opciones.forEach((o) => o.addEventListener("change", aplicar));
+  aplicar();
+}
+document.addEventListener("DOMContentLoaded", conectarFormato);
+
+/* ══════════════════════════════════════════
    CREAR EVENTO
 ══════════════════════════════════════════ */
 window.crearEvento = async function () {
@@ -288,13 +327,15 @@ window.crearEvento = async function () {
       fechaISO: fechaRaw || new Date().toISOString().split("T")[0],
       jornada: document.getElementById("evJornada").value,
       institucion: document.getElementById("evInstitucion").value.trim(),
+      formato: formatoElegido(),
+      horario: document.getElementById("evHorario").value.trim(),
       creadoEn: Timestamp.now(),
     });
 
     console.log("Evento creado con ID:", docRef.id);
 
     // Limpiar campos
-    ["evNombre", "evInstitucion"].forEach(
+    ["evNombre", "evInstitucion", "evHorario"].forEach(
       (id) => (document.getElementById(id).value = ""),
     );
     document.getElementById("evFecha").valueAsDate = new Date();
@@ -545,6 +586,36 @@ window.guardarConvocados = async function () {
    Pasa que alguien se registra en broma o escribe mal sus datos, y el
    listado es el soporte oficial del evento: debe poder corregirse.
 ══════════════════════════════════════════ */
+/* ── Columnas de la tabla de registros según el formato ──
+
+   Las tres primeras y las tres últimas son iguales en los dos formatos;
+   lo que cambia es el bloque del medio, que es justamente lo que cada
+   formato pide de distinto. */
+function columnasDelMedio(ev) {
+  if (formatoDe(ev).codigo === "SGFT07") {
+    return [
+      { titulo: "Cargo", celda: (r) => r.cargo || "—" },
+      { titulo: "Teléfono", celda: (r) => r.telefono || "—" },
+      { titulo: "Correo", celda: (r) => r.correo || "—" },
+    ];
+  }
+  return [
+    { titulo: "Sexo", celda: (r) => `<span title="${etiquetaSexo(r)}">${siglaSexo(r)}</span>` },
+    { titulo: "Nivel", celda: (r) => `<span class="nivel-badge">${r.nivel || "—"}</span>` },
+  ];
+}
+
+function pintarCabeceraRegistros(ev) {
+  const fila = document.getElementById("regCabecera");
+  if (!fila) return;
+  const medio = columnasDelMedio(ev).map((c) => c.titulo);
+  const titulos = ["#", "Cédula", "Nombre", "Dependencia", ...medio, "Hora", "Firma", ""];
+  fila.innerHTML = titulos.map((t) => `<th>${t}</th>`).join("");
+  // El colspan de los mensajes ("Cargando…", "Sin registros") debe
+  // coincidir con el número real de columnas
+  window._regColumnas = titulos.length;
+}
+
 /* Pinta la asistencia frente a lo convocado. Si el evento no tiene lista
    cargada no se inventa nada: el panel simplemente no aparece. */
 function pintarInasistencia(ev, registros) {
@@ -804,7 +875,10 @@ async function renderEventos() {
           <div class="ev-item-icon">${cerrado ? "🔒" : "📋"}</div>
           <div class="ev-item-info">
             <div class="ev-item-nombre">${ev.nombre} ${cerrado ? '<span class="badge-cerrado">CERRADO</span>' : ""}</div>
-            <div class="ev-item-meta">${[ev.fecha, ev.jornada, ev.institucion].filter(Boolean).join(" · ")}</div>
+            <div class="ev-item-meta">
+              <span class="ev-formato ${formatoDe(ev).codigo.toLowerCase()}" title="${formatoDe(ev).titulo}">${formatoDe(ev).codigo}</span>
+              ${[ev.fecha, ev.horario || ev.jornada, ev.institucion].filter(Boolean).join(" · ")}
+            </div>
           </div>
           <div class="ev-item-actions">
             <span class="ev-count ${count === 0 ? "cero" : ""}" title="${tituloConteo}">${conteo}</span>
@@ -889,7 +963,7 @@ window.cargarRegistros = async function () {
     return;
   }
 
-  tabla.innerHTML = '<tr><td colspan="9" class="sin-datos">Cargando…</td></tr>';
+  tabla.innerHTML = `<tr><td colspan="${window._regColumnas || 9}" class="sin-datos">Cargando…</td></tr>`;
 
   try {
     const evDoc = await getDocs(collection(db, COL_EVENTOS));
@@ -899,9 +973,14 @@ window.cargarRegistros = async function () {
       ? ev.nombre
       : "Evento";
     document.getElementById("regSub").textContent = ev
-      ? [ev.fecha, ev.jornada, ev.institucion].filter(Boolean).join(" · ")
+      ? [ev.fecha, ev.horario || ev.jornada, ev.institucion]
+          .filter(Boolean)
+          .join(" · ") + ` · ${formatoDe(ev).codigo}`
       : "";
     window._evActual = ev;
+
+    // Las columnas y el PDF dependen del formato del evento
+    pintarCabeceraRegistros(ev);
 
     // ── Escucha en TIEMPO REAL: Firestore nos avisa cada vez
     //    que alguien se registra y la tabla se redibuja sola ──
@@ -911,18 +990,23 @@ window.cargarRegistros = async function () {
         document.getElementById("regConteo").innerHTML =
           `<span class="live-dot"></span> EN VIVO · ${regs.size} participante(s) registrado(s)`;
         btnEx.style.display = regs.size ? "inline-flex" : "none";
+        // El PDF está dibujado a mano y solo existe para el PTFT38
         const btnPdf = document.getElementById("btnExportarPdf");
-        if (btnPdf) btnPdf.style.display = regs.size ? "inline-flex" : "none";
+        if (btnPdf) {
+          btnPdf.style.display =
+            regs.size && formatoDe(ev).tienePDF ? "inline-flex" : "none";
+        }
 
         if (regs.empty) {
           tabla.innerHTML =
-            '<tr><td colspan="9" class="sin-datos">Sin registros en este evento.<br><small>Esta tabla se actualiza sola cuando alguien se registre.</small></td></tr>';
+            `<tr><td colspan="${window._regColumnas || 9}" class="sin-datos">Sin registros en este evento.<br><small>Esta tabla se actualiza sola cuando alguien se registre.</small></td></tr>`;
           window._regActuales = [];
           // Que no haya llegado nadie es precisamente lo que hay que ver
           pintarInasistencia(ev, []);
           return;
         }
 
+        const medio = columnasDelMedio(ev);
         tabla.innerHTML = regs.docs
           .map((d, i) => {
             const r = { id: d.id, ...d.data() };
@@ -938,8 +1022,7 @@ window.cargarRegistros = async function () {
         <td>${r.cedula}</td>
         <td style="font-weight:500;white-space:nowrap">${r.nombre}</td>
         <td style="font-size:11.5px">${r.dependencia}</td>
-        <td title="${etiquetaSexo(r)}">${siglaSexo(r)}</td>
-        <td><span class="nivel-badge">${r.nivel}</span></td>
+        ${medio.map((c) => `<td style="font-size:11.5px">${c.celda(r)}</td>`).join("")}
         <td style="font-size:11px;color:var(--txt)">${hora}</td>
         <td><img class="thumb-firma" src="${r.firma}" onclick="verFirma('${r.firma}','${r.nombre.replace(/'/g, "\\'")}')"></td>
         <td><button class="btn-borrar-reg" title="Eliminar este registro"
@@ -955,13 +1038,13 @@ window.cargarRegistros = async function () {
       (err) => {
         console.error("Error en tiempo real:", err);
         tabla.innerHTML =
-          '<tr><td colspan="9" class="sin-datos" style="color:var(--error)">Error al cargar. Revise la consola.</td></tr>';
+          `<tr><td colspan="${window._regColumnas || 9}" class="sin-datos" style="color:var(--error)">Error al cargar. Revise la consola.</td></tr>`;
       },
     );
   } catch (err) {
     console.error("Error cargando registros:", err);
     tabla.innerHTML =
-      '<tr><td colspan="9" class="sin-datos" style="color:var(--error)">Error al cargar. Revise la consola.</td></tr>';
+      `<tr><td colspan="${window._regColumnas || 9}" class="sin-datos" style="color:var(--error)">Error al cargar. Revise la consola.</td></tr>`;
   }
 };
 

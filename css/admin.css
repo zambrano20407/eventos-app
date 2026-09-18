@@ -1634,3 +1634,68 @@ tbody td {
 .sx-o {
   border-left: 4px solid var(--gr-ambar);
 }
+
+/* ══════════════════════════════════════════
+   FORMATO DE ASISTENCIA
+══════════════════════════════════════════ */
+.formatos-opciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+}
+.formato-op {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--gris-bd);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.formato-op input {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  accent-color: var(--azul-boton);
+  flex-shrink: 0;
+}
+.formato-op span {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--tinta);
+}
+.formato-op b {
+  display: block;
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  color: var(--azul-nav);
+}
+.formato-op small {
+  display: block;
+  font-size: 11px;
+  color: var(--gris-txt);
+  margin-top: 2px;
+}
+.formato-op.activa {
+  border-color: var(--azul-boton);
+  background: #eef4fb;
+}
+
+/* Insignia del formato en la lista de eventos */
+.ev-formato {
+  display: inline-block;
+  font-family: "Montserrat", sans-serif;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-right: 6px;
+  background: var(--azul-nav);
+  color: #fff;
+}
+.ev-formato.sgft07 {
+  background: var(--gr-teal);
+}

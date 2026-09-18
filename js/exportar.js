@@ -1,11 +1,13 @@
 /* ============================================================
    exportar.js — Generacion de Excel con ExcelJS (sin servidor)
-   Usa la plantilla PTFT38 limpia y replica exactamente
-   el comportamiento del servidor Python con firmas digitales.
-   Si hay mas de 25 registros, crea una hoja por cada grupo de 25.
+   Llena la plantilla oficial que corresponda al formato del evento:
+   PTFT38 (capacitaciones, 25 filas por hoja) o SGFT07 (reuniones, 23).
+   Cuando hay mas registros de los que caben, agrega una hoja por cada
+   grupo, conservando membrete y formato.
    ============================================================ */
 
 import { siglaSexo } from "./sexo.js";
+import { formatoDe } from "./formatos.js";
 
 const REGISTROS_POR_HOJA = 25;
 
@@ -148,25 +150,103 @@ function imagenRaya() {
   return _rayaCache;
 }
 
-export async function exportarPTFT38(evento, registros) {
+/* ── Llena UNA hoja del SGFT07 (asistencia a reuniones) ──
+
+   Este formato no pide sexo ni nivel del cargo: pide cargo, teléfono y
+   correo. Las etiquetas ya vienen escritas en la plantilla, así que el
+   valor se concatena para no borrarlas.
+
+   Filas de datos: 13 a 35 (23 por hoja). */
+const SGFT07_FILA_INICIAL = 13;
+
+function llenarHojaSGFT07(wb, ws, evento, registros) {
+  const encabezado = [
+    ["A8", "REUNIÓN:", evento?.nombre],
+    ["G8", "FECHA:", evento?.fecha],
+    ["A10", "LUGAR:", evento?.institucion],
+    ["G10", "HORARIO:", evento?.horario || evento?.jornada],
+  ];
+  encabezado.forEach(([celda, etiqueta, valor]) => {
+    ws.getCell(celda).value = `${etiqueta}  ${valor || ""}`;
+  });
+
+  // Limpiar las filas por si la plantilla trajera algo
+  for (let fila = SGFT07_FILA_INICIAL; fila <= SGFT07_FILA_INICIAL + 22; fila++) {
+    [1, 2, 5, 6, 7, 9, 10].forEach((col) => {
+      ws.getCell(fila, col).value = null;
+    });
+  }
+
+  let conFirma = 0;
+  const fuente = { name: "Arial", size: 11 };
+
+  registros.forEach((reg, i) => {
+    const fila = SGFT07_FILA_INICIAL + i;
+
+    // A=Nro · B:D=nombre · E=cédula · F=cargo · G:H=dependencia
+    // I=teléfono · J:L=correo · M=firma
+    ws.getCell(fila, 1).value = i + 1;
+    ws.getCell(fila, 2).value = reg.nombre || "";
+    ws.getCell(fila, 5).value = reg.cedula || "";
+    ws.getCell(fila, 6).value = reg.cargo || "";
+    ws.getCell(fila, 7).value = reg.dependencia || "";
+    ws.getCell(fila, 9).value = reg.telefono || "";
+    ws.getCell(fila, 10).value = reg.correo || "";
+
+    [1, 2, 5, 6, 7, 9, 10].forEach((col) => {
+      const celda = ws.getCell(fila, col);
+      celda.font = fuente;
+      celda.alignment = CENTRADO;
+    });
+
+    const firma = reg.firma || "";
+    if (firma && firma.includes(",")) {
+      try {
+        const imgId = wb.addImage({
+          base64: firma.split(",")[1],
+          extension: "png",
+        });
+        // Columna M (índice 12 en base cero), centrada en su fila
+        ws.addImage(imgId, {
+          tl: { col: 12.1, row: fila - 1 + 0.08 },
+          ext: { width: 200, height: 58 },
+          editAs: "oneCell",
+        });
+        conFirma++;
+      } catch (e) {
+        console.warn(`Firma fila ${fila}:`, e.message);
+      }
+    }
+  });
+
+  return conFirma;
+}
+
+export async function exportarAsistencia(evento, registros) {
   await cargarExcelJS();
 
+  const formato = formatoDe(evento);
+  const esReunion = formato.codigo === "SGFT07";
+  const porHoja = formato.filasPorHoja;
+
   // ── Cargar plantilla limpia desde hosting ──
-  const resp = await fetch("/PTFT38.xlsx");
-  if (!resp.ok) throw new Error("No se pudo cargar la plantilla Excel.");
+  const resp = await fetch(formato.plantilla);
+  if (!resp.ok) {
+    throw new Error(`No se pudo cargar la plantilla ${formato.codigo}.`);
+  }
   const templateBuffer = await resp.arrayBuffer();
 
-  // ── Partir los registros en grupos de 25 (uno por hoja) ──
+  // ── Partir los registros: una hoja por grupo ──
   const grupos = [];
-  for (let i = 0; i < registros.length; i += REGISTROS_POR_HOJA) {
-    grupos.push(registros.slice(i, i + REGISTROS_POR_HOJA));
+  for (let i = 0; i < registros.length; i += porHoja) {
+    grupos.push(registros.slice(i, i + porHoja));
   }
   if (grupos.length === 0) grupos.push([]);
 
   // ── Cargar logo solo si habra hojas clonadas (la primera
   //    ya lo trae embebido en la plantilla) ──
   let logoBase64 = null;
-  if (grupos.length > 1) {
+  if (grupos.length > 1 && !esReunion) {
     try {
       const logoResp = await fetch("/img/LogoFormato.jpg");
       const logoBuffer = await logoResp.arrayBuffer();
@@ -186,24 +266,36 @@ export async function exportarPTFT38(evento, registros) {
   const hojaBase = wb.worksheets[0];
   const nombreBase = hojaBase.name;
 
-  let conFirma = 0;
-
-  for (let g = 0; g < grupos.length; g++) {
-    let ws;
-    if (g === 0) {
-      ws = hojaBase;
-      if (grupos.length > 1) ws.name = `${nombreBase} (1)`;
-    } else {
-      // Clonar la hoja plantilla: copiamos su "modelo" (formato,
-      // celdas combinadas, anchos de columna) a una hoja nueva
-      ws = wb.addWorksheet(`${nombreBase} (${g + 1})`);
-      ws.model = Object.assign({}, hojaBase.model, {
-        mergeCells: hojaBase.model.merges,
-      });
+  // ── Crear TODAS las hojas antes de llenar ninguna ──
+  //
+  // Dos cosas que hay que hacer en este orden:
+  //
+  // 1. El modelo de la hoja base se copia SIN su nombre. Copiarlo
+  //    completo intentaba ponerle a la hoja nueva el nombre de la
+  //    original, y ExcelJS aborta con "Worksheet name already exists".
+  //
+  // 2. Se clona antes de escribir nada. Si se clona una hoja ya llena,
+  //    el clon arrastra las firmas de la anterior y la segunda hoja
+  //    sale con las firmas de las dos.
+  const hojas = [hojaBase];
+  if (grupos.length > 1) {
+    const { name: _sinNombre, ...modeloBase } = hojaBase.model;
+    const merges = hojaBase.model.merges;
+    hojaBase.name = `${nombreBase} (1)`;
+    for (let g = 1; g < grupos.length; g++) {
+      const ws = wb.addWorksheet(`hoja_${g}`);
+      ws.model = Object.assign({}, modeloBase, { mergeCells: merges });
       ws.name = `${nombreBase} (${g + 1})`;
+      hojas.push(ws);
     }
-    conFirma += llenarHoja(wb, ws, evento, grupos[g], logoBase64, g > 0);
   }
+
+  let conFirma = 0;
+  grupos.forEach((grupo, g) => {
+    conFirma += esReunion
+      ? llenarHojaSGFT07(wb, hojas[g], evento, grupo)
+      : llenarHoja(wb, hojas[g], evento, grupo, logoBase64, g > 0);
+  });
 
   // ── Descargar ──
   const buffer = await wb.xlsx.writeBuffer();
@@ -213,11 +305,14 @@ export async function exportarPTFT38(evento, registros) {
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement("a");
   a.href     = url;
-  a.download = `PTFT38_${(evento?.nombre || "Evento").replace(/\s+/g, "_")}.xlsx`;
+  a.download = `${formato.codigo}_${(evento?.nombre || "Evento").replace(/\s+/g, "_")}.xlsx`;
   a.click();
   URL.revokeObjectURL(url);
 
   console.log(
-    `✅ Excel generado: ${grupos.length} hoja(s), ${registros.length} registro(s), ${conFirma} firma(s)`
+    `✅ ${formato.codigo}: ${grupos.length} hoja(s), ${registros.length} registro(s), ${conFirma} firma(s)`
   );
 }
+
+/* Nombre anterior, conservado para no romper llamadas existentes */
+export const exportarPTFT38 = exportarAsistencia;

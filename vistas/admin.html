@@ -126,6 +126,31 @@
           <div class="section-title">Crear nuevo evento</div>
           <div class="evento-form-wrap">
             <div class="form-grid">
+              <!-- El formato define qué datos se le piden al asistente,
+                   así que se escoge antes que nada -->
+              <div class="span2">
+                <div class="field">
+                  <label>Formato de asistencia <span class="req">*</span></label>
+                  <div class="formatos-opciones" id="evFormatoOpciones">
+                    <label class="formato-op activa">
+                      <input type="radio" name="evFormato" value="PTFT38" checked />
+                      <span>
+                        <b>PTFT38</b>
+                        Permanencia del Talento Humano
+                        <small>Capacitaciones y formación · pide sexo y nivel del cargo</small>
+                      </span>
+                    </label>
+                    <label class="formato-op">
+                      <input type="radio" name="evFormato" value="SGFT07" />
+                      <span>
+                        <b>SGFT07</b>
+                        Asistencia a Reuniones
+                        <small>Reuniones y comités · pide cargo, teléfono y correo</small>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </div>
               <div class="span2">
                 <div class="field">
                   <label
@@ -160,9 +185,23 @@
                   </div>
                 </div>
               </div>
+              <!-- El SGFT07 imprime un horario, no una jornada -->
+              <div id="evHorarioWrap" style="display: none">
+                <div class="field">
+                  <label>Horario</label>
+                  <input
+                    type="text"
+                    id="evHorario"
+                    placeholder="Ej. 8:00 a. m. a 12:00 m."
+                    autocomplete="off"
+                  />
+                </div>
+              </div>
               <div class="span2">
                 <div class="field">
-                  <label>Institución que dicta</label>
+                  <!-- El PTFT38 pide la institución que dicta; el SGFT07,
+                       el lugar donde se hizo la reunión -->
+                  <label id="evInstitucionLabel">Institución que dicta</label>
                   <input
                     type="text"
                     id="evInstitucion"
@@ -311,18 +350,10 @@
 
           <div class="reg-table-wrap">
             <table>
+              <!-- Las columnas del medio dependen del formato del
+                   evento, así que las arma el script -->
               <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Cédula</th>
-                  <th>Nombre</th>
-                  <th>Dependencia</th>
-                  <th>Sexo</th>
-                  <th>Nivel</th>
-                  <th>Hora</th>
-                  <th>Firma</th>
-                  <th></th>
-                </tr>
+                <tr id="regCabecera"></tr>
               </thead>
               <tbody id="regTabla">
                 <tr>

@@ -1,5 +1,6 @@
 import { db } from "./firebase-config.js";
 import { SEDES } from "./sedes.js";
+import { formatoDe } from "./formatos.js";
 import {
   collection,
   addDoc,
@@ -34,6 +35,31 @@ function llenarDependencias() {
     "beforeend",
     SEDES.map((s) => `<option>${s.nombre}</option>`).join(""),
   );
+}
+
+/* ¿El evento se lleva en el formato de reuniones (SGFT07)? */
+function esFormatoReuniones() {
+  return formatoDe(eventoActivo).codigo === "SGFT07";
+}
+
+/* Muestra los campos del formato que corresponda. Un asistente a una
+   reunión no debería ver preguntas de sexo y nivel del cargo, porque
+   el SGFT07 no las imprime; y al revés con cargo, teléfono y correo. */
+function aplicarFormatoAlFormulario() {
+  const esReunion = esFormatoReuniones();
+  const ptft = document.getElementById("camposPTFT38");
+  const sgft = document.getElementById("camposSGFT07");
+  if (ptft) ptft.style.display = esReunion ? "none" : "block";
+  if (sgft) sgft.style.display = esReunion ? "block" : "none";
+
+  // El teléfono es solo dígitos
+  const tel = document.getElementById("telefono");
+  if (tel && !tel.dataset.conectado) {
+    tel.dataset.conectado = "1";
+    tel.addEventListener("input", () => {
+      tel.value = tel.value.replace(/[^0-9]/g, "");
+    });
+  }
 }
 
 /* El campo de texto solo se muestra al marcar "Otro". Al cambiar a
@@ -144,11 +170,15 @@ function mostrarFormulario(ev) {
   document.getElementById("evNombre").textContent = ev.nombre;
   document.getElementById("evMeta").textContent = [
     ev.fecha,
-    ev.jornada,
+    ev.horario || ev.jornada,
     ev.institucion,
   ]
     .filter(Boolean)
     .join(" · ");
+
+  // Hasta aquí no se sabía en qué formato se lleva el evento, y de eso
+  // dependen los campos que hay que mostrar
+  aplicarFormatoAlFormulario();
 }
 
 /* ══════════════════════════════════════════
@@ -316,13 +346,31 @@ window.enviar = async function () {
     ok = false;
   } else dep.classList.remove("err");
 
-  if (!document.querySelector('input[name="sexo"]:checked')) {
-    alert("Seleccione el sexo.");
-    ok = false;
-  }
-  if (!document.querySelector('input[name="nivel"]:checked')) {
-    alert("Seleccione el nivel del cargo.");
-    ok = false;
+  // Cada formato exige lo suyo: pedir sexo en una reunión, o correo en
+  // una capacitación, sería pedir un dato que ese formato no imprime
+  if (esFormatoReuniones()) {
+    ["cargo", "telefono", "correo"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el.value.trim()) {
+        el.classList.add("err");
+        ok = false;
+      } else el.classList.remove("err");
+    });
+    const correo = document.getElementById("correo");
+    if (correo.value.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.value.trim())) {
+      correo.classList.add("err");
+      alert("El correo electrónico no tiene un formato válido.");
+      ok = false;
+    }
+  } else {
+    if (!document.querySelector('input[name="sexo"]:checked')) {
+      alert("Seleccione el sexo.");
+      ok = false;
+    }
+    if (!document.querySelector('input[name="nivel"]:checked')) {
+      alert("Seleccione el nivel del cargo.");
+      ok = false;
+    }
   }
   if (!hasSig) {
     alert("Por favor dibuje su firma en el recuadro.");
@@ -364,7 +412,10 @@ window.enviar = async function () {
     console.error("Error verificando cédula duplicada:", err);
   }
 
-  const sexoMarcado = document.querySelector('input[name="sexo"]:checked').value;
+  const sexoMarcado =
+    document.querySelector('input[name="sexo"]:checked')?.value || "";
+  const nivelMarcado =
+    document.querySelector('input[name="nivel"]:checked')?.value || "";
 
   const registro = {
     eventoId: eventoActivo.id,
@@ -380,7 +431,11 @@ window.enviar = async function () {
       sexoMarcado === "Otro"
         ? document.getElementById("sexoDetalle").value.trim()
         : "",
-    nivel: document.querySelector('input[name="nivel"]:checked').value,
+    nivel: nivelMarcado,
+    // Propios del SGFT07; en un evento de PTFT38 quedan vacíos
+    cargo: document.getElementById("cargo").value.trim(),
+    telefono: document.getElementById("telefono").value.trim(),
+    correo: document.getElementById("correo").value.trim(),
     firma: canvas.toDataURL("image/png"),
     creadoEn: Timestamp.now(),
   };
