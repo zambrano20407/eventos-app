@@ -152,6 +152,8 @@
   font-size: 10px;
 }
 input[type="text"],
+input[type="email"],
+input[type="tel"],
 select {
   font-family: "Open Sans", sans-serif;
   font-size: 15px;
@@ -491,4 +493,13 @@ canvas {
 }
 .sexo-otro input {
   width: 100%;
+}
+
+/* Los campos propios de cada formato van dentro de un contenedor, que
+   rompe el gap del formulario: aquí se le devuelve la misma separación */
+#camposPTFT38,
+#camposSGFT07 {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }

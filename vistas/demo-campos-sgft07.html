@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Muestra · Campos del SGFT07</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="stylesheet" href="../css/asistencia.css" />
+    <style>
+      body { background: #eef1f6; }
+      .demo-wrap { max-width: 620px; margin: 24px auto; padding: 0 16px; }
+      .demo-aviso {
+        font-size: 12.5px; color: #92400e; background: #fffbeb;
+        border: 1.5px solid #fcd34d; border-radius: 6px;
+        padding: 10px 14px; margin-bottom: 16px;
+      }
+      .card { background: #fff; border-radius: 10px; }
+    </style>
+  </head>
+  <body>
+    <div class="demo-wrap">
+      <p class="demo-aviso">
+        <strong>Página de muestra</strong> con el mismo marcado y los mismos
+        estilos del formulario real, para revisar la estética de los campos.
+      </p>
+
+      <div class="card">
+        <div class="card-body" id="formBody">
+          <div class="field">
+            <label><span class="ico">📍</span> Dependencia <span class="req">*</span></label>
+            <div class="select-wrap">
+              <select id="dependencia">
+                <option>Delegación Departamental</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="camposSGFT07">
+            <div class="field">
+              <label><span class="ico">🏷</span> Cargo <span class="req">*</span></label>
+              <input type="text" id="cargo" maxlength="60" autocomplete="off"
+                placeholder="Ej. Registrador Municipal" />
+            </div>
+            <div class="field">
+              <label><span class="ico">📞</span> Teléfono / extensión <span class="req">*</span></label>
+              <input type="text" id="telefono" maxlength="15" inputmode="numeric"
+                autocomplete="off" placeholder="Ej. 3123456789" />
+            </div>
+            <div class="field">
+              <label><span class="ico">✉</span> Correo electrónico <span class="req">*</span></label>
+              <input type="email" id="correo" maxlength="60" autocomplete="off"
+                placeholder="Ej. nombre@registraduria.gov.co" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>✍️ &nbsp;Firma digital <span class="req">*</span></label>
+            <div class="canvas-wrap"><canvas width="540" height="130"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      // Mismo filtro del formulario real
+      const SOLO_LETRAS = /[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g;
+      const cargo = document.getElementById("cargo");
+      cargo.addEventListener("input", () => {
+        const pos = cargo.selectionStart;
+        const limpio = cargo.value.replace(SOLO_LETRAS, "");
+        if (limpio === cargo.value) return;
+        cargo.value = limpio;
+        cargo.setSelectionRange(pos - 1, pos - 1);
+      });
+      const tel = document.getElementById("telefono");
+      tel.addEventListener("input", () => {
+        tel.value = tel.value.replace(/[^0-9]/g, "");
+      });
+    </script>
+  </body>
+</html>

@@ -49,8 +49,10 @@ function aplicarFormatoAlFormulario() {
   const esReunion = esFormatoReuniones();
   const ptft = document.getElementById("camposPTFT38");
   const sgft = document.getElementById("camposSGFT07");
-  if (ptft) ptft.style.display = esReunion ? "none" : "block";
-  if (sgft) sgft.style.display = esReunion ? "block" : "none";
+  // Se deja vacío en vez de "block" para que mande la hoja de estilos,
+  // donde el contenedor es flex y conserva la separación entre campos
+  if (ptft) ptft.style.display = esReunion ? "none" : "";
+  if (sgft) sgft.style.display = esReunion ? "" : "none";
 
   // El teléfono es solo dígitos
   const tel = document.getElementById("telefono");
@@ -58,6 +60,26 @@ function aplicarFormatoAlFormulario() {
     tel.dataset.conectado = "1";
     tel.addEventListener("input", () => {
       tel.value = tel.value.replace(/[^0-9]/g, "");
+    });
+  }
+
+  // El cargo es solo letras, igual que el nombre. Se filtra al escribir
+  // y al pegar, que es por donde se cuela la basura.
+  const cargo = document.getElementById("cargo");
+  if (cargo && !cargo.dataset.conectado) {
+    cargo.dataset.conectado = "1";
+    const SOLO_LETRAS = /[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g;
+    cargo.addEventListener("input", () => {
+      const pos = cargo.selectionStart;
+      const limpio = cargo.value.replace(SOLO_LETRAS, "");
+      if (limpio === cargo.value) return;
+      cargo.value = limpio;
+      cargo.setSelectionRange(pos - 1, pos - 1);
+    });
+    cargo.addEventListener("paste", (e) => {
+      e.preventDefault();
+      const texto = (e.clipboardData || window.clipboardData).getData("text");
+      cargo.value = texto.replace(SOLO_LETRAS, "").slice(0, 60);
     });
   }
 }
