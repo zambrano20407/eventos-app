@@ -32,20 +32,12 @@ const CENTRADO = {
   wrapText: true,
 };
 
-/* ── Llena UNA hoja con el encabezado, logo y hasta 25 registros ──
-   El logo solo se agrega en hojas clonadas: la primera hoja ya lo
-   trae embebido en la plantilla (agregarlo de nuevo lo duplicaba) ── */
-function llenarHoja(wb, ws, evento, registros, logoBase64, esClon) {
-  if (esClon && logoBase64) {
-    const logoId = wb.addImage({ base64: logoBase64, extension: "jpeg" });
-    // 5.32 cm x 1.32 cm ≈ 201 x 50 px (96 dpi), igual al ajuste manual
-    ws.addImage(logoId, {
-      tl:  { col: 1, row: 1 },
-      ext: { width: 201, height: 50 },
-      editAs: "oneCell",
-    });
-  }
-
+/* ── Llena UNA hoja con el encabezado y hasta 25 registros ──
+   El logo ya no se vuelve a insertar en las hojas clonadas: al copiar
+   el modelo de la plantilla las imágenes vienen incluidas. Al hacerlo a
+   mano se agregaba estirado (201 x 50 px, proporción 4:1, cuando la
+   imagen real es 641 x 411, proporción 1,56). */
+function llenarHoja(wb, ws, evento, registros) {
   // ── Llenar encabezado igual que Python ──
   ws.getCell("B9").value  = `Institucion que dicta el curso / formacion / capacitacion:  ${evento?.institucion || ""}`;
   ws.getCell("I9").value  = `Fecha:  ${evento?.fecha || ""}`;
@@ -243,24 +235,6 @@ export async function exportarAsistencia(evento, registros) {
   }
   if (grupos.length === 0) grupos.push([]);
 
-  // ── Cargar logo solo si habra hojas clonadas (la primera
-  //    ya lo trae embebido en la plantilla) ──
-  let logoBase64 = null;
-  if (grupos.length > 1 && !esReunion) {
-    try {
-      const logoResp = await fetch("/img/LogoFormato.jpg");
-      const logoBuffer = await logoResp.arrayBuffer();
-      logoBase64 = btoa(
-        new Uint8Array(logoBuffer).reduce(
-          (data, byte) => data + String.fromCharCode(byte),
-          ""
-        )
-      );
-    } catch (e) {
-      console.warn("Logo no cargado:", e.message);
-    }
-  }
-
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.load(templateBuffer);
   const hojaBase = wb.worksheets[0];
@@ -294,7 +268,7 @@ export async function exportarAsistencia(evento, registros) {
   grupos.forEach((grupo, g) => {
     conFirma += esReunion
       ? llenarHojaSGFT07(wb, hojas[g], evento, grupo)
-      : llenarHoja(wb, hojas[g], evento, grupo, logoBase64, g > 0);
+      : llenarHoja(wb, hojas[g], evento, grupo);
   });
 
   // ── Descargar ──

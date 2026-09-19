@@ -19,20 +19,43 @@ async function cargarJsPDF() {
   });
 }
 
-/* ── Cargar el logo institucional como dataURL ── */
+/* ── Cargar el logo institucional ──
+   Se devuelven también sus dimensiones reales: dibujarlo con un tamaño
+   fijo lo deformaba. La imagen mide 641 x 411 px y se estaba estirando
+   a una proporción de 4:1. */
 async function cargarLogo() {
   try {
     const resp = await fetch("/img/LogoFormato.jpg");
     const blob = await resp.blob();
-    return await new Promise((resolve) => {
+    const dataURL = await new Promise((resolve) => {
       const r = new FileReader();
       r.onload = () => resolve(r.result);
       r.onerror = () => resolve(null);
       r.readAsDataURL(blob);
     });
+    if (!dataURL) return null;
+
+    const medidas = await new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+      img.onerror = () => resolve(null);
+      img.src = dataURL;
+    });
+    return { dataURL, ...(medidas || { w: 641, h: 411 }) };
   } catch {
     return null;
   }
+}
+
+/* Encaja una imagen dentro de un recuadro sin deformarla y la centra,
+   que es lo que hace Excel al insertarla flotando en la celda. */
+function encajarCentrado(imagen, x, y, ancho, alto, margen = 2.5) {
+  const dispW = ancho - margen * 2;
+  const dispH = alto - margen * 2;
+  const escala = Math.min(dispW / imagen.w, dispH / imagen.h);
+  const w = imagen.w * escala;
+  const h = imagen.h * escala;
+  return { x: x + (ancho - w) / 2, y: y + (alto - h) / 2, w, h };
 }
 
 export async function exportarPDF(evento, registros) {
@@ -87,8 +110,10 @@ function dibujarPagina(doc, evento, registros, logo) {
   doc.line(M + wLogo + wEtq, y, M + wLogo + wEtq, y + hEnc);
 
   if (logo) {
-    // Logo centrado en su recuadro (proporcion ~5.32 x 1.32 cm -> 30 x 7.5 mm)
-    doc.addImage(logo, "JPEG", M + 4, y + 5.2, 30, 7.5);
+    // Encajado en su recuadro conservando la proporción, como queda en
+    // el Excel: flotando y centrado, no estirado hasta llenar la celda
+    const r = encajarCentrado(logo, M, y, wLogo, hEnc);
+    doc.addImage(logo.dataURL, "JPEG", r.x, r.y, r.w, r.h);
   }
 
   doc.setFont("helvetica", "bold");
@@ -277,9 +302,16 @@ function dibujarPagina(doc, evento, registros, logo) {
     'Nota: *La columna "Grupo", se diligencia cuando exista más de 1 grupo de formación / capacitación en la misma fecha.',
     M + W / 2, y + hNota / 2 + 1, { align: "center" },
   );
-  y += hNota + 9;
+  y += hNota;
 
-  /* ── RAYA Y FIRMA RESPONSABLE ── */
+  /* ── RAYA Y FIRMA RESPONSABLE ──
+     Se ancla al pie de la hoja en vez de ir pegada a la tabla: con 25
+     filas quedaba en el milímetro 266 de 297 y abajo sobraban más de
+     dos centímetros en blanco. El máximo conserva una separación
+     mínima por si alguna vez la tabla llega más abajo. */
+  const ALTO = 297; // A4 vertical
+  y = Math.max(y + 9, ALTO - M - 12);
+
   doc.setLineWidth(0.4);
   doc.line(M + 22, y, M + W - 22, y);
   doc.setFont("helvetica", "bold");
