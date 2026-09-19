@@ -85,7 +85,6 @@ console.log("admin.js conectado con Firebase");
 const COL_EVENTOS = "eventos";
 const COL_REGS = (evId) => `eventos/${evId}/registros`;
 
-const TEMPLATE_URL = "/PTFT38.xlsx";
 const URL_ASISTENCIA = "/vistas/asistencia.html";
 
 // ── Detectar si estamos en el servidor local Python ──────────
@@ -127,14 +126,15 @@ async function exportar(eventoId, nombreBoton) {
       a.click();
       URL.revokeObjectURL(urlBlob);
     } else {
-      // ── Firebase Hosting → SheetJS ──
+      // ── Firebase Hosting → ExcelJS ──
+      // Sin esto, un evento sin cargar producía un
+      // "Cannot read properties of undefined" que no decía nada
+      if (!window._evActual || !window._regActuales?.length) {
+        throw new Error("Primero seleccione un evento con registros.");
+      }
       await cargarExportar();
       if (exportarPTFT38) {
-        await exportarPTFT38(
-          window._evActual,
-          window._regActuales,
-          TEMPLATE_URL,
-        );
+        await exportarPTFT38(window._evActual, window._regActuales);
       } else {
         alert("Módulo de exportación no disponible.");
       }
@@ -1103,21 +1103,11 @@ window.exportarSeleccionadoPDF = async function () {
     return;
   }
   try {
-    const evDoc = await getDocs(collection(db, COL_EVENTOS));
-    const ev = evDoc.docs.find((d) => d.id === evId)?.data();
-    const regs = await getDocs(
-      query(collection(db, COL_REGS(evId)), orderBy("creadoEn", "asc")),
-    );
-    if (regs.empty) {
-      alert("El evento no tiene registros.");
-      return;
-    }
-    window._evActual = ev;
-    window._regActuales = regs.docs.map((d) => ({ id: d.id, ...d.data() }));
+    await cargarParaExportar(evId);
     await window.exportarEventoPDF(null);
   } catch (err) {
     console.error("Error generando PDF:", err);
-    alert(`Error al generar el PDF:\n${err.message}`);
+    alert(err.message);
   }
 };
 
@@ -1203,8 +1193,17 @@ window.exportarTodo = async function () {
       URL.revokeObjectURL(url);
     } else {
       const snap = await getDocs(collection(db, COL_EVENTOS));
+
+      // El consolidado se arma sobre la plantilla PTFT38, así que solo
+      // puede llevar eventos de ese formato: los de reuniones piden
+      // cargo, teléfono y correo, que el PTFT38 no tiene dónde poner
+      const dePTFT38 = snap.docs.filter(
+        (d) => formatoDe(d.data()).codigo === "PTFT38",
+      );
+      const deReuniones = snap.docs.length - dePTFT38.length;
+
       let todos = [];
-      for (const ev of snap.docs) {
+      for (const ev of dePTFT38) {
         const regs = await getDocs(collection(db, COL_REGS(ev.id)));
         regs.docs.forEach((r) =>
           todos.push({
@@ -1215,16 +1214,28 @@ window.exportarTodo = async function () {
         );
       }
       if (!todos.length) {
-        alert("No hay registros para exportar.");
+        alert(
+          deReuniones
+            ? "No hay registros en eventos de PTFT38.\n\nLos eventos de reuniones (SGFT07) se exportan uno por uno, porque su formato pide otros datos."
+            : "No hay registros para exportar.",
+        );
         return;
+      }
+      if (deReuniones) {
+        alert(
+          `Se van a exportar ${todos.length} registro(s) de los eventos en PTFT38.\n\n` +
+            `${deReuniones} evento(s) de reuniones (SGFT07) quedan por fuera: ese formato pide ` +
+            `cargo, teléfono y correo, que no caben en el PTFT38. Expórtelos uno por uno.`,
+        );
       }
       const eventoGenerico = {
         nombre: "Todos los Eventos",
         fecha: new Date().toLocaleDateString("es-CO"),
         institucion: "Registraduría Nacional del Estado Civil",
         jornada: "",
+        formato: "PTFT38",
       };
-      await exportarPTFT38(eventoGenerico, todos, TEMPLATE_URL);
+      await exportarPTFT38(eventoGenerico, todos);
     }
   } catch (err) {
     alert(`Error: ${err.message}`);
@@ -1236,10 +1247,37 @@ window.exportarTodo = async function () {
   }
 };
 
+/* Deja en memoria el evento elegido y sus registros.
+
+   Las exportaciones leen window._evActual y window._regActuales, que
+   solo se llenaban al abrir la pestaña Registros. Desde la pestaña
+   Exportar eso fallaba de dos maneras: recién cargada la página no
+   había nada que exportar, y si antes se había abierto otro evento se
+   exportaba el equivocado sin avisar. */
+async function cargarParaExportar(evId) {
+  const evDoc = await getDocs(collection(db, COL_EVENTOS));
+  const ev = evDoc.docs.find((d) => d.id === evId);
+  if (!ev) throw new Error("No se encontró el evento seleccionado.");
+
+  const regs = await getDocs(
+    query(collection(db, COL_REGS(evId)), orderBy("creadoEn", "asc")),
+  );
+  if (regs.empty) throw new Error("El evento no tiene registros.");
+
+  window._evActual = { id: ev.id, ...ev.data() };
+  window._regActuales = regs.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
 window.exportarSeleccionado = async function () {
   const evId = document.getElementById("exportSelector").value;
   if (!evId) {
     alert("Seleccione un evento.");
+    return;
+  }
+  try {
+    await cargarParaExportar(evId);
+  } catch (err) {
+    alert(err.message);
     return;
   }
   await exportar(evId, null);
