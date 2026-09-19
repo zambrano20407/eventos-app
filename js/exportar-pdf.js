@@ -1,10 +1,12 @@
 /* ============================================================
-   exportar-pdf.js — Generacion de PDF del formato PTFT38
-   Dibuja el formato institucional directamente (jsPDF):
-   encabezado, tabla de 25 filas por pagina, firmas y pie.
+   exportar-pdf.js — Generacion de PDF de los formatos oficiales
+   Dibuja el formato directamente con jsPDF, segun el que use el evento:
+   PTFT38 vertical con 25 filas por pagina, SGFT07 horizontal con 23,
+   cada uno con su encabezado, su tabla y sus firmas.
    ============================================================ */
 
 import { siglaSexo } from "./sexo.js";
+import { formatoDe } from "./formatos.js";
 
 const FILAS_POR_PAGINA = 25;
 
@@ -62,23 +64,204 @@ export async function exportarPDF(evento, registros) {
   await cargarJsPDF();
   const logo = await cargarLogo();
 
-  const { jsPDF } = window.jspdf;
-  // A4 vertical: 210 x 297 mm
-  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  // Cada formato tiene su propia hoja: el PTFT38 se imprime vertical y
+  // el SGFT07 horizontal, igual que sus plantillas de Excel
+  const formato = formatoDe(evento);
+  const esReunion = formato.codigo === "SGFT07";
+  const porPagina = esReunion ? SGFT07_FILAS : FILAS_POR_PAGINA;
 
-  // Partir registros en paginas de 25
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({
+    orientation: esReunion ? "landscape" : "portrait",
+    unit: "mm",
+    format: "a4",
+  });
+
   const grupos = [];
-  for (let i = 0; i < registros.length; i += FILAS_POR_PAGINA) {
-    grupos.push(registros.slice(i, i + FILAS_POR_PAGINA));
+  for (let i = 0; i < registros.length; i += porPagina) {
+    grupos.push(registros.slice(i, i + porPagina));
   }
   if (grupos.length === 0) grupos.push([]);
 
   grupos.forEach((grupo, idx) => {
     if (idx > 0) doc.addPage();
-    dibujarPagina(doc, evento, grupo, logo);
+    if (esReunion) dibujarPaginaSGFT07(doc, evento, grupo, logo);
+    else dibujarPagina(doc, evento, grupo, logo);
   });
 
-  doc.save(`PTFT38_${(evento?.nombre || "Evento").replace(/\s+/g, "_")}.pdf`);
+  doc.save(
+    `${formato.codigo}_${(evento?.nombre || "Evento").replace(/\s+/g, "_")}.pdf`,
+  );
+}
+
+/* ════════════════════════════════════════════════════════════
+   SGFT07 — Asistencia a reuniones
+
+   Va en horizontal, como se imprime la plantilla oficial, y con las
+   mismas proporciones de columna que tiene el Excel (las anchuras de
+   abajo son las del archivo, repartidas sobre el ancho de la hoja).
+════════════════════════════════════════════════════════════ */
+const SGFT07_FILAS = 23;
+
+// Proporciones tomadas de la plantilla: A | B:D | E | F | G:H | I | J:L | M
+const SGFT07_COLS = [
+  { t: "Nro.", w: 6.9, campo: null },
+  { t: "NOMBRES Y APELLIDOS", w: 87.9, campo: "nombre" },
+  { t: "CÉDULA", w: 49.6, campo: "cedula" },
+  { t: "CARGO", w: 45.6, campo: "cargo" },
+  { t: "ENTIDAD\nY/O DEPENDENCIA", w: 43.3, campo: "dependencia" },
+  { t: "TELÉFONO / EXTENSIÓN", w: 36.1, campo: "telefono" },
+  { t: "CORREO ELECTRÓNICO", w: 66.8, campo: "correo" },
+  { t: "FIRMA", w: 34.0, campo: null },
+];
+
+function dibujarPaginaSGFT07(doc, evento, registros, logo) {
+  const M = 8;
+  const ANCHO = 297; // A4 horizontal
+  const ALTO = 210;
+  const W = ANCHO - M * 2;
+  let y = M;
+
+  doc.setDrawColor(0);
+  doc.setLineWidth(0.25);
+
+  /* ── ENCABEZADO ── */
+  const hEnc = 16;
+  const suma = SGFT07_COLS.reduce((s, c) => s + c.w, 0);
+  const anchos = SGFT07_COLS.map((c) => (c.w / suma) * W);
+
+  // El logo ocupa las dos primeras columnas, como en la plantilla
+  const wLogo = anchos[0] + anchos[1];
+  const wEtq = anchos[2] * 0.36;
+  const wCod2 = anchos[7];
+  const wCod1 = anchos[6] * 0.28;
+  const wCentro = W - wLogo - wEtq - wCod1 - wCod2;
+
+  doc.rect(M, y, W, hEnc);
+  let x = M + wLogo;
+  [wEtq, wCentro, wCod1].forEach((ancho) => {
+    doc.line(x, y, x, y + hEnc);
+    x += ancho;
+  });
+  doc.line(x, y, x, y + hEnc);
+  doc.line(M + wLogo, y + hEnc / 2, M + W, y + hEnc / 2);
+
+  if (logo) {
+    const r = encajarCentrado(logo, M, y, wLogo, hEnc);
+    doc.addImage(logo.dataURL, "JPEG", r.x, r.y, r.w, r.h);
+  }
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  const xEtq = M + wLogo + wEtq / 2;
+  const xCen = M + wLogo + wEtq + wCentro / 2;
+  const xCod1 = M + wLogo + wEtq + wCentro + wCod1 / 2;
+  const xCod2 = M + wLogo + wEtq + wCentro + wCod1 + wCod2 / 2;
+  const arriba = y + hEnc / 4 + 1.2;
+  const abajo = y + (hEnc * 3) / 4 + 1.2;
+
+  doc.text("PROCESO", xEtq, arriba, { align: "center" });
+  doc.text("FORMATO", xEtq, abajo, { align: "center" });
+  doc.text("CÓDIGO", xCod1, arriba, { align: "center" });
+  doc.text("VERSIÓN", xCod1, abajo, { align: "center" });
+  doc.text("SGFT07", xCod2, arriba, { align: "center" });
+  doc.text("0", xCod2, abajo, { align: "center" });
+  doc.setFontSize(7.5);
+  doc.text("SISTEMA DE GESTIÓN Y MEJORAMIENTO INSTITUCIONAL", xCen, arriba, { align: "center" });
+  doc.text("ASISTENCIA A REUNIONES", xCen, abajo, { align: "center" });
+
+  y += hEnc;
+
+  /* ── APROBADO ── */
+  const hAprob = 5;
+  doc.rect(M, y, W, hAprob);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6);
+  doc.text("Aprobado: 15/11/2017", M + W / 2, y + hAprob / 2 + 1, { align: "center" });
+  y += hAprob + 1.5;
+
+  /* ── REUNIÓN / FECHA y LUGAR / HORARIO ── */
+  const hDato = 8;
+  const wIzq = W * 0.55;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+
+  [
+    [["REUNIÓN:", evento?.nombre], ["FECHA:", evento?.fecha]],
+    [["LUGAR:", evento?.institucion], ["HORARIO:", evento?.horario || evento?.jornada]],
+  ].forEach(([izq, der], i) => {
+    const yy = y + i * hDato;
+    doc.rect(M, yy, W, hDato);
+    doc.line(M + wIzq, yy, M + wIzq, yy + hDato);
+    doc.text(`${izq[0]}  ${izq[1] || ""}`, M + 2.5, yy + hDato / 2 + 1, {
+      maxWidth: wIzq - 5,
+    });
+    doc.text(`${der[0]}  ${der[1] || ""}`, M + wIzq + 2.5, yy + hDato / 2 + 1, {
+      maxWidth: W - wIzq - 5,
+    });
+  });
+  y += hDato * 2 + 1.5;
+
+  /* ── CABECERA DE LA TABLA ── */
+  const hCab = 9;
+  const xs = [];
+  let acum = M;
+  anchos.forEach((a) => {
+    xs.push(acum);
+    acum += a;
+  });
+
+  doc.setFillColor(217, 217, 217);
+  doc.rect(M, y, W, hCab, "FD");
+  doc.setFontSize(5.8);
+  SGFT07_COLS.forEach((col, i) => {
+    if (i > 0) doc.line(xs[i], y, xs[i], y + hCab);
+    const lineas = col.t.split("\n");
+    const inicio = y + hCab / 2 + 1 - (lineas.length - 1) * 1.3;
+    lineas.forEach((linea, j) => {
+      doc.text(linea, xs[i] + anchos[i] / 2, inicio + j * 2.6, { align: "center" });
+    });
+  });
+  y += hCab;
+
+  /* ── FILAS ── */
+  const hFila = 6;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6);
+
+  for (let f = 0; f < SGFT07_FILAS; f++) {
+    const reg = registros[f];
+    doc.rect(M, y, W, hFila);
+    SGFT07_COLS.forEach((col, i) => {
+      if (i > 0) doc.line(xs[i], y, xs[i], y + hFila);
+    });
+
+    if (reg) {
+      doc.text(String(f + 1), xs[0] + anchos[0] / 2, y + hFila / 2 + 1, { align: "center" });
+      SGFT07_COLS.forEach((col, i) => {
+        if (!col.campo) return;
+        const valor = String(reg[col.campo] || "");
+        if (!valor) return;
+        // Recortar lo que no quepa: el formato imprime una sola línea
+        let texto = valor;
+        const disponible = anchos[i] - 2;
+        while (texto && doc.getTextWidth(texto) > disponible) {
+          texto = texto.slice(0, -1);
+        }
+        doc.text(texto, xs[i] + anchos[i] / 2, y + hFila / 2 + 1, { align: "center" });
+      });
+
+      const firma = reg.firma || "";
+      if (firma.startsWith("data:image")) {
+        try {
+          doc.addImage(firma, "PNG", xs[7] + 2, y + 0.4, anchos[7] - 4, hFila - 0.8);
+        } catch (e) {
+          /* firma ilegible: la celda queda vacía */
+        }
+      }
+    }
+    y += hFila;
+  }
 }
 
 /* ════════════════════════════════════════════════════════════

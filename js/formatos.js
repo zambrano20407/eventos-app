@@ -25,7 +25,6 @@ export const FORMATOS = {
     // Campos que el formulario pide además de los comunes
     campos: ["sexo", "nivel"],
     filasPorHoja: 25,
-    // Hoy solo el PTFT38 tiene su versión dibujada en PDF
     tienePDF: true,
   },
   SGFT07: {
@@ -35,7 +34,8 @@ export const FORMATOS = {
     plantilla: "/SGFT07.xlsx",
     campos: ["cargo", "telefono", "correo"],
     filasPorHoja: 23,
-    tienePDF: false,
+    // El PDF se dibuja horizontal, como se imprime la plantilla
+    tienePDF: true,
   },
 };
 
